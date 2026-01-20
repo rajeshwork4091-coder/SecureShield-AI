@@ -12,13 +12,13 @@ export type Device = {
 };
 
 export const devices: Device[] = [
-  { id: 'DEV001', name: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'High', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 2).toISOString(), alertsCount: 3 },
-  { id: 'DEV002', name: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString(), riskLevel: 'Medium', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 5).toISOString(), alertsCount: 1 },
-  { id: 'DEV003', name: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 2).toISOString(), riskLevel: 'Low', os: 'VM', lastScan: new Date(Date.now() - 86400000 * 3).toISOString(), alertsCount: 0 },
-  { id: 'DEV004', name: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'Medium', os: 'macOS', lastScan: new Date(Date.now() - 3600000 * 1).toISOString(), alertsCount: 0 },
-  { id: 'DEV005', name: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'High', os: 'Linux', lastScan: new Date(Date.now() - 3600000 * 8).toISOString(), alertsCount: 5 },
-  { id: 'DEV006', name: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 5).toISOString(), riskLevel: 'Low', os: 'Tablet', lastScan: new Date(Date.now() - 86400000 * 6).toISOString(), alertsCount: 0 },
-  { id: 'DEV007', name: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString(), riskLevel: 'Low', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 4).toISOString(), alertsCount: 0 },
+  { id: 'DEV001', name: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:34:56Z', riskLevel: 'High', os: 'Windows', lastScan: '2026-01-18T10:34:56Z', alertsCount: 3 },
+  { id: 'DEV002', name: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:20:00Z', riskLevel: 'Medium', os: 'Windows', lastScan: '2026-01-18T06:20:00Z', alertsCount: 1 },
+  { id: 'DEV003', name: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-16T09:00:00Z', riskLevel: 'Low', os: 'VM', lastScan: '2026-01-15T09:00:00Z', alertsCount: 0 },
+  { id: 'DEV004', name: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:30:00Z', riskLevel: 'Medium', os: 'macOS', lastScan: '2026-01-18T11:30:00Z', alertsCount: 0 },
+  { id: 'DEV005', name: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:00:00Z', riskLevel: 'High', os: 'Linux', lastScan: '2026-01-18T04:00:00Z', alertsCount: 5 },
+  { id: 'DEV006', name: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-13T14:00:00Z', riskLevel: 'Low', os: 'Tablet', lastScan: '2026-01-12T14:00:00Z', alertsCount: 0 },
+  { id: 'DEV007', name: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:45:00Z', riskLevel: 'Low', os: 'Windows', lastScan: '2026-01-18T07:45:00Z', alertsCount: 0 },
 ];
 
 export type Threat = {
@@ -38,10 +38,10 @@ export type Threat = {
 };
 
 export const threats: Threat[] = [
-  { id: 'TH001', type: 'Malware Detected', severity: 'High', device: 'finance-laptop-01', timestamp: new Date(Date.now() - 3600000).toISOString(), status: 'Active', detectionMethod: 'Signature Matching', riskScore: 95, details: { file: 'C:\\Users\\Finance\\Downloads\\invoice.exe', process: 'invoice.exe' }, rawTelemetry: '{"event":"file_create","path":"C:\\\\Users\\\\Finance\\\\Downloads\\\\invoice.exe","hash":"a1b2c3d4...","signature":"Win.Trojan.Generic/A"}' },
-  { id: 'TH002', type: 'Phishing Attempt', severity: 'Medium', device: 'hr-desktop-05', timestamp: new Date(Date.now() - 86400000).toISOString(), status: 'Resolved', detectionMethod: 'Behavioral Analysis', riskScore: 65, details: { file: 'N/A', process: 'chrome.exe' }, rawTelemetry: '{"event":"network_outbound","process":"chrome.exe","destination":"phishingsite.com","port":443}' },
-  { id: 'TH003', type: 'Unusual Network Traffic', severity: 'Low', device: 'dev-server-01', timestamp: new Date(Date.now() - 86400000 * 2).toISOString(), status: 'Active', detectionMethod: 'Anomaly Detection', riskScore: 40, details: { file: 'N/A', process: 'sshd' }, rawTelemetry: '{"event":"network_anomaly","bytes_out":50000000,"protocol":"ssh","destination":"123.45.67.89"}' },
-  { id: 'TH004', type: 'Ransomware Behavior', severity: 'High', device: 'marketing-vm-02', timestamp: new Date(Date.now() - 86400000 * 3).toISOString(), status: 'Quarantined', detectionMethod: 'Behavioral Analysis', riskScore: 98, details: { file: 'D:\\Marketing\\Assets\\project.docx.locked', process: 'crypt.exe' }, rawTelemetry: '{"event":"mass_file_rename","pattern":"*.locked","count":582,"process":"crypt.exe"}' },
+  { id: 'TH001', type: 'Malware Detected', severity: 'High', device: 'finance-laptop-01', timestamp: '2026-01-18T11:34:56Z', status: 'Active', detectionMethod: 'Signature Matching', riskScore: 95, details: { file: 'C:\\Users\\Finance\\Downloads\\invoice.exe', process: 'invoice.exe' }, rawTelemetry: '{"event":"file_create","path":"C:\\\\Users\\\\Finance\\\\Downloads\\\\invoice.exe","hash":"a1b2c3d4...","signature":"Win.Trojan.Generic/A"}' },
+  { id: 'TH002', type: 'Phishing Attempt', severity: 'Medium', device: 'hr-desktop-05', timestamp: '2026-01-17T12:34:56Z', status: 'Resolved', detectionMethod: 'Behavioral Analysis', riskScore: 65, details: { file: 'N/A', process: 'chrome.exe' }, rawTelemetry: '{"event":"network_outbound","process":"chrome.exe","destination":"phishingsite.com","port":443}' },
+  { id: 'TH003', type: 'Unusual Network Traffic', severity: 'Low', device: 'dev-server-01', timestamp: '2026-01-16T12:34:56Z', status: 'Active', detectionMethod: 'Anomaly Detection', riskScore: 40, details: { file: 'N/A', process: 'sshd' }, rawTelemetry: '{"event":"network_anomaly","bytes_out":50000000,"protocol":"ssh","destination":"123.45.67.89"}' },
+  { id: 'TH004', type: 'Ransomware Behavior', severity: 'High', device: 'marketing-vm-02', timestamp: '2026-01-15T12:34:56Z', status: 'Quarantined', detectionMethod: 'Behavioral Analysis', riskScore: 98, details: { file: 'D:\\Marketing\\Assets\\project.docx.locked', process: 'crypt.exe' }, rawTelemetry: '{"event":"mass_file_rename","pattern":"*.locked","count":582,"process":"crypt.exe"}' },
 ];
 
 export type SecurityPolicy = {
@@ -80,15 +80,9 @@ export const dashboardData = {
     devicesOfflineChange: '1.5%',
     devicesOfflineChangeType: 'decrease' as 'increase' | 'decrease',
   },
-  threatsOverTime: Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    return {
-      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      detected: Math.floor(Math.random() * 10) + 5,
-      resolved: Math.floor(Math.random() * 8) + 3,
-    };
-  }),
+  threatsOverTime: [
+    { date: 'Dec 20', detected: 15, resolved: 7 }, { date: 'Dec 21', detected: 5, resolved: 5 }, { date: 'Dec 22', detected: 7, resolved: 9 }, { date: 'Dec 23', detected: 9, resolved: 3 }, { date: 'Dec 24', detected: 11, resolved: 7 }, { date: 'Dec 25', detected: 13, resolved: 5 }, { date: 'Dec 26', detected: 15, resolved: 9 }, { date: 'Dec 27', detected: 5, resolved: 3 }, { date: 'Dec 28', detected: 7, resolved: 7 }, { date: 'Dec 29', detected: 9, resolved: 5 }, { date: 'Dec 30', detected: 11, resolved: 9 }, { date: 'Dec 31', detected: 13, resolved: 3 }, { date: 'Jan 1', detected: 15, resolved: 7 }, { date: 'Jan 2', detected: 5, resolved: 5 }, { date: 'Jan 3', detected: 7, resolved: 9 }, { date: 'Jan 4', detected: 9, resolved: 3 }, { date: 'Jan 5', detected: 11, resolved: 7 }, { date: 'Jan 6', detected: 13, resolved: 5 }, { date: 'Jan 7', detected: 15, resolved: 9 }, { date: 'Jan 8', detected: 5, resolved: 3 }, { date: 'Jan 9', detected: 7, resolved: 7 }, { date: 'Jan 10', detected: 9, resolved: 5 }, { date: 'Jan 11', detected: 11, resolved: 9 }, { date: 'Jan 12', detected: 13, resolved: 3 }, { date: 'Jan 13', detected: 15, resolved: 7 }, { date: 'Jan 14', detected: 5, resolved: 5 }, { date: 'Jan 15', detected: 7, resolved: 9 }, { date: 'Jan 16', detected: 9, resolved: 3 }, { date: 'Jan 17', detected: 11, resolved: 7 }, { date: 'Jan 18', detected: 13, resolved: 5 }
+  ],
   devicesByPolicy: securityPolicies.map(p => ({
     policy: p.name,
     total: devices.filter(d => d.policy === p.name).length,
