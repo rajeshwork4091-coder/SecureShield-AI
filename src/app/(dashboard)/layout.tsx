@@ -10,7 +10,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="h-screen w-full">
+    <div className="h-screen w-full overflow-hidden">
       <aside
         className={cn(
           'fixed left-0 top-0 z-40 h-screen transition-all duration-300',
