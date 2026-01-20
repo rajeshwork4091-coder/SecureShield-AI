@@ -21,6 +21,9 @@ export function DashboardHeader() {
       <div className="relative ml-auto flex-1 md:grow-0">
         {/* Can add a search bar here if needed */}
       </div>
+      <div className="text-sm text-muted-foreground">
+        Last updated: 18 Jan 2026 (Simulated Data)
+      </div>
       <UserNav />
     </header>
   );

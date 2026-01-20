@@ -16,7 +16,7 @@ const chartConfig = {
   },
   resolved: {
     label: 'Resolved',
-    color: 'hsl(var(--chart-1))',
+    color: 'hsl(var(--chart-green))',
   },
 } satisfies ChartConfig;
 
@@ -25,7 +25,7 @@ export const ThreatsChart: FC<ThreatsChartProps> = ({ data }) => {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline">Threats Over Time</CardTitle>
-        <CardDescription>Detected vs. Resolved threats in the last 30 days</CardDescription>
+        <CardDescription>Simulated data for last 30 days</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-64 w-full">
