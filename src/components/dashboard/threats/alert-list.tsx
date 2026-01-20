@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Bot, Cpu, File, ShieldQuestion, Lock, ShieldAlert, Check } from 'lucide-react';
-import { format } from 'date-fns';
 import { Progress } from '@/components/ui/progress';
 
 interface AlertListProps {
@@ -73,7 +72,7 @@ export function AlertList({ alerts }: AlertListProps) {
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
               <Badge variant={statusVariantMap[alert.status]}>{alert.status}</Badge>
-              <p className="hidden text-sm text-muted-foreground lg:block">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
+              <p className="hidden text-sm text-muted-foreground lg:block">{alert.timestamp.substring(0, 19).replace('T', ' ')}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -93,7 +92,7 @@ export function AlertList({ alerts }: AlertListProps) {
                     </div>
                     <div>
                         <p className="font-medium">Timestamp</p>
-                        <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
+                        <p className="text-muted-foreground">{alert.timestamp.substring(0, 19).replace('T', ' ')}</p>
                     </div>
                     <div className="col-span-2 md:col-span-4">
                         <p className="font-medium">Risk Score: {alert.riskScore}/100</p>

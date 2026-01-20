@@ -16,7 +16,6 @@ import { MoreHorizontal, Power, ShieldAlert, ShieldCheck, ShieldQuestion, Laptop
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { format } from 'date-fns';
 
 
 declare module '@tanstack/react-table' {
@@ -165,7 +164,10 @@ export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: 'lastSeen',
     header: 'Last Seen',
-    cell: ({ row }) => format(new Date(row.getValue('lastSeen')), 'yyyy-MM-dd HH:mm:ss'),
+    cell: ({ row }) => {
+      const dateString = row.getValue('lastSeen') as string;
+      return dateString.substring(0, 19).replace('T', ' ');
+    },
   },
   {
     id: 'actions',
