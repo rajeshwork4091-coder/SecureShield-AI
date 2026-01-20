@@ -13,7 +13,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     <div className="h-screen w-full overflow-hidden">
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen transition-all duration-300',
+          'fixed left-0 top-0 z-40 h-screen transition-all duration-300 hidden md:block',
           isSidebarCollapsed ? 'w-20' : 'w-64'
         )}
       >
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div
         className={cn(
           'flex min-h-screen flex-col transition-all duration-300',
-          isSidebarCollapsed ? 'ml-20' : 'ml-64'
+          isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'
         )}
       >
         <DashboardHeader
