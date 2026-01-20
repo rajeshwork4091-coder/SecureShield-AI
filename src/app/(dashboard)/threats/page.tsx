@@ -1,3 +1,5 @@
+'use client';
+
 import { AlertList } from '@/components/dashboard/threats/alert-list';
 import { threats } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
