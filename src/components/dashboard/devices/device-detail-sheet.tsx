@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { type Device } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { AlertCircle, ShieldCheck, ShieldOff } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface DeviceDetailSheetProps {
   device: Device | null;
@@ -67,11 +68,11 @@ export function DeviceDetailSheet({ device, isOpen, onOpenChange }: DeviceDetail
            <div className="grid grid-cols-2 gap-4">
              <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Last Seen</p>
-              <p>{new Date(device.lastSeen).toLocaleString()}</p>
+              <p>{format(new Date(device.lastSeen), 'Pp')}</p>
             </div>
              <div className="space-y-1">
               <p className="text-sm font-medium text-muted-foreground">Last Scan</p>
-              <p>{new Date(device.lastScan).toLocaleString()}</p>
+              <p>{format(new Date(device.lastScan), 'Pp')}</p>
             </div>
           </div>
         </div>

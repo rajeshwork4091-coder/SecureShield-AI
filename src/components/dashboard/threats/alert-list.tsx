@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, Bot, Cpu, File, ShieldQuestion } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface AlertListProps {
   alerts: Threat[];
@@ -49,7 +50,7 @@ export function AlertList({ alerts }: AlertListProps) {
                 <span>{alert.detectionMethod}</span>
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
-              <p className="hidden text-sm text-muted-foreground lg:block">{new Date(alert.timestamp).toLocaleString()}</p>
+              <p className="hidden text-sm text-muted-foreground lg:block">{format(new Date(alert.timestamp), 'Pp')}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -69,7 +70,7 @@ export function AlertList({ alerts }: AlertListProps) {
                 </div>
                  <div>
                   <p className="font-medium">Timestamp</p>
-                  <p className="text-muted-foreground">{new Date(alert.timestamp).toLocaleString()}</p>
+                  <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'Pp')}</p>
                 </div>
               </div>
               <div>
