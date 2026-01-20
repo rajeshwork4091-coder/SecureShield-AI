@@ -1,10 +1,12 @@
+'use client';
+
 import { UserNav } from '@/components/dashboard/user-nav';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { DashboardSidebar } from './sidebar';
 
-export function DashboardHeader() {
+export function DashboardHeader({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-card px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
       <Sheet>
@@ -18,6 +20,17 @@ export function DashboardHeader() {
           <DashboardSidebar isMobile={true} />
         </SheetContent>
       </Sheet>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onToggleSidebar}
+        className="hidden md:inline-flex"
+      >
+        <Menu className="h-5 w-5" />
+        <span className="sr-only">Toggle Sidebar</span>
+      </Button>
+
       <div className="relative ml-auto flex-1 md:grow-0">
         {/* Can add a search bar here if needed */}
       </div>
