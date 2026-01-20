@@ -9,8 +9,8 @@ import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address.' }),
-  password: z.string().min(1, { message: 'Password is required.' }),
+  email: z.string(),
+  password: z.string(),
 });
 
 export function LoginForm() {

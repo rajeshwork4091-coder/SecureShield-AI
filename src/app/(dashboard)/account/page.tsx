@@ -21,13 +21,13 @@ export default function AccountPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="John Doe" />
+              <Input id="name" defaultValue="John Doe" disabled />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="john.doe@example.com" />
+              <Input id="email" type="email" defaultValue="john.doe@example.com" disabled />
             </div>
-            <Button>Save Changes</Button>
+            <Button disabled>Save Changes</Button>
           </CardContent>
         </Card>
         <Card>
@@ -37,7 +37,7 @@ export default function AccountPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">MFA is currently disabled.</p>
-            <Button>Enable MFA</Button>
+            <Button disabled>Enable MFA</Button>
           </CardContent>
         </Card>
       </div>

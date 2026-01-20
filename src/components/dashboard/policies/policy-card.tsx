@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { toast } from '@/hooks/use-toast';
 import type { SecurityPolicy } from '@/lib/data';
 import { ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
 import type { FC } from 'react';
@@ -21,14 +20,6 @@ const policyIcons = {
 };
 
 export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
-  const handleSave = () => {
-    // In a real app, you would save the policy changes here.
-    toast({
-      title: 'Policy Saved',
-      description: `The "${policy.name}" policy has been updated.`,
-    });
-  };
-
   return (
     <Card>
       <CardHeader>
@@ -41,7 +32,7 @@ export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
       <CardContent className="space-y-6">
         <div className="space-y-2">
           <Label>Scan Level</Label>
-          <Select defaultValue={policy.settings.scanLevel}>
+          <Select defaultValue={policy.settings.scanLevel} disabled>
             <SelectTrigger>
               <SelectValue placeholder="Select scan level" />
             </SelectTrigger>
@@ -57,18 +48,18 @@ export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
             <Label>Auto-Quarantine</Label>
             <p className="text-xs text-muted-foreground">Automatically quarantine high-risk threats.</p>
           </div>
-          <Switch defaultChecked={policy.settings.autoQuarantine} />
+          <Switch defaultChecked={policy.settings.autoQuarantine} disabled />
         </div>
         <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
           <div>
             <Label>Offline Protection</Label>
             <p className="text-xs text-muted-foreground">Use cached definitions when offline.</p>
           </div>
-          <Switch defaultChecked={policy.settings.offlineProtection} />
+          <Switch defaultChecked={policy.settings.offlineProtection} disabled />
         </div>
       </CardContent>
       <CardFooter>
-        <Button onClick={handleSave} className="w-full">
+        <Button disabled className="w-full">
           Save Policy
         </Button>
       </CardFooter>

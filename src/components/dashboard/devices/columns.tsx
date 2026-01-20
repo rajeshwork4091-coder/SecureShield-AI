@@ -98,11 +98,11 @@ export const columns: ColumnDef<Device>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(device.id)}>
+            <DropdownMenuItem disabled onClick={() => navigator.clipboard.writeText(device.id)}>
               Copy Device ID
             </DropdownMenuItem>
-            <DropdownMenuItem>View Details</DropdownMenuItem>
-            <DropdownMenuItem>Isolate Device</DropdownMenuItem>
+            <DropdownMenuItem disabled>View Details</DropdownMenuItem>
+            <DropdownMenuItem disabled>Isolate Device</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

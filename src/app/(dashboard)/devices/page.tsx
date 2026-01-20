@@ -19,7 +19,7 @@ export default async function DevicesPage() {
           <h1 className="font-headline text-3xl font-semibold">Device Management</h1>
           <p className="text-muted-foreground">View, manage, and protect your endpoint devices.</p>
         </div>
-        <Button>
+        <Button disabled>
           <PlusCircle />
           Enroll New Device
         </Button>
