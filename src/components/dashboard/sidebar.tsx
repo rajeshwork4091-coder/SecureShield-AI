@@ -14,21 +14,20 @@ import {
   Settings,
   LifeBuoy,
 } from 'lucide-react';
-import { Button } from '../ui/button';
 
 interface DashboardSidebarProps {
   isMobile?: boolean;
 }
 
 const navItems = [
-  { href: '/', label: 'Overview', icon: Gauge },
-  { href: '/devices', label: 'Devices', icon: Laptop },
-  { href: '/threats', label: 'Threats', icon: AlertTriangle },
-  { href: '/policies', label: 'Policies', icon: Shield },
+  { href: '/dashboard', label: 'Overview', icon: Gauge },
+  { href: '/dashboard/devices', label: 'Devices', icon: Laptop },
+  { href: '/dashboard/threats', label: 'Threats', icon: AlertTriangle },
+  { href: '/dashboard/policies', label: 'Policies', icon: Shield },
 ];
 
 const secondaryNavItems = [
-  { href: '/account', label: 'Account', icon: Settings },
+  { href: '/dashboard/account', label: 'Account', icon: Settings },
   { href: '#', label: 'Support', icon: LifeBuoy },
 ];
 
@@ -39,7 +38,7 @@ export function DashboardSidebar({ isMobile = false }: DashboardSidebarProps) {
     cn(
       'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary',
       {
-        'bg-muted text-primary': (href === '/' && pathname === '/') || (href !== '/' && pathname.startsWith(href)),
+        'bg-muted text-primary': (href === '/dashboard' && pathname === '/dashboard') || (href !== '/dashboard' && pathname.startsWith(href)),
         'justify-center': isMobile,
       }
     );
@@ -48,7 +47,7 @@ export function DashboardSidebar({ isMobile = false }: DashboardSidebarProps) {
     <div className={cn('hidden border-r bg-card md:block', { 'block md:hidden': isMobile })}>
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
             <AppLogo />
           </Link>
         </div>

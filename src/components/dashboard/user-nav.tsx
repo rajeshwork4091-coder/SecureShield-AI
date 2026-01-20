@@ -35,7 +35,7 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/account">Account</Link>
+            <Link href="/dashboard/account">Account</Link>
           </DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
         </DropdownMenuGroup>

@@ -27,7 +27,7 @@ export function LoginForm() {
     // In a real app, you would handle authentication here.
     console.log(values);
     // For this demo, we'll just redirect to the dashboard.
-    router.push('/');
+    router.push('/dashboard');
   }
 
   return (
