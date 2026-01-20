@@ -10,16 +10,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen w-full">
-      <div
+    <div className="h-screen w-full">
+      <aside
         className={cn(
-          'transition-all duration-300',
+          'fixed left-0 top-0 z-40 h-screen transition-all duration-300',
           isSidebarCollapsed ? 'w-20' : 'w-64'
         )}
       >
         <DashboardSidebar isCollapsed={isSidebarCollapsed} />
-      </div>
-      <div className="flex flex-1 flex-col overflow-hidden">
+      </aside>
+      <div
+        className={cn(
+          'flex min-h-screen flex-col transition-all duration-300',
+          isSidebarCollapsed ? 'ml-20' : 'ml-64'
+        )}
+      >
         <DashboardHeader
           onToggleSidebar={() => setSidebarCollapsed(!isSidebarCollapsed)}
         />
