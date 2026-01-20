@@ -42,7 +42,7 @@ export default function AccountPage() {
           <CardHeader>
             <CardTitle>Multi-Factor Authentication</CardTitle>
             <CardDescription>Add an extra layer of security to your account.</CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">Multi-factor authentication helps protect your account against unauthorized access.</p>
             <p className="text-sm text-muted-foreground">MFA is currently disabled.</p>
