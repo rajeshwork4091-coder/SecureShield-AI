@@ -1,13 +1,28 @@
 'use client';
 
-import { type ColumnDef } from '@tanstack/react-table';
+import { type ColumnDef, RowData } from '@tanstack/react-table';
 import type { Device } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Power, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import { MoreHorizontal, Power, ShieldAlert, ShieldCheck, ShieldQuestion, Laptop, Server, Tablet, Apple, ShieldOff, Eye, Trash2, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    setSelectedDevice: (device: Device) => void;
+  }
+}
 
 const policyVariantMap = {
   Strict: 'destructive',
@@ -20,6 +35,20 @@ const policyIconMap = {
   Balanced: <ShieldCheck className="mr-2 h-4 w-4" />,
   Lenient: <ShieldQuestion className="mr-2 h-4 w-4" />,
 };
+
+const riskVariantMap = {
+  High: 'destructive',
+  Medium: 'secondary',
+  Low: 'outline',
+} as const;
+
+const osIconMap: Record<Device['os'], React.ReactNode> = {
+  Windows: <Laptop className="h-4 w-4 text-muted-foreground" />,
+  macOS: <Apple className="h-4 w-4 text-muted-foreground" />,
+  Linux: <Server className="h-4 w-4 text-muted-foreground" />,
+  VM: <Server className="h-4 w-4 text-muted-foreground" />,
+  Tablet: <Tablet className="h-4 w-4 text-muted-foreground" />,
+}
 
 
 export const columns: ColumnDef<Device>[] = [
@@ -45,21 +74,74 @@ export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: 'name',
     header: 'Device Name',
-    cell: ({ row }) => (
-        <div className="font-medium">{row.original.name}</div>
+    cell: ({ row, table }) => (
+        <div 
+            className="font-medium hover:underline cursor-pointer"
+            onClick={() => table.options.meta?.setSelectedDevice(row.original)}
+        >
+            {row.original.name}
+        </div>
     )
+  },
+  {
+    accessorKey: 'os',
+    header: 'OS',
+    cell: ({ row }) => {
+        const os = row.original.os;
+        return (
+            <div className="flex items-center gap-2">
+                {osIconMap[os]}
+                <span>{os}</span>
+            </div>
+        )
+    }
+  },
+  {
+    accessorKey: 'riskLevel',
+    header: 'Risk Level',
+    cell: ({row}) => {
+        const riskLevel = row.original.riskLevel;
+        return (
+            <Badge variant={riskVariantMap[riskLevel]} className="capitalize">
+                <span className="mr-2">
+                    {riskLevel === 'High' && '🔴'}
+                    {riskLevel === 'Medium' && '🟡'}
+                    {riskLevel === 'Low' && '🟢'}
+                </span>
+                {riskLevel}
+            </Badge>
+        )
+    }
   },
   {
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
       const status = row.getValue('status') as string;
-      return (
+      const isOffline = status === 'Offline';
+      const statusCell = (
         <div className="flex items-center">
             <Power className={cn('mr-2 h-4 w-4', status === 'Online' ? 'text-green-500' : 'text-muted-foreground')} />
             {status}
         </div>
       );
+
+      if(isOffline) {
+          return (
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div>{statusCell}</div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Offline (No heartbeat in last 48 hrs)</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+          )
+      }
+
+      return statusCell;
     },
   },
   {
@@ -86,7 +168,7 @@ export const columns: ColumnDef<Device>[] = [
   },
   {
     id: 'actions',
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const device = row.original;
       return (
         <DropdownMenu>
@@ -98,11 +180,19 @@ export const columns: ColumnDef<Device>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem disabled onClick={() => navigator.clipboard.writeText(device.id)}>
-              Copy Device ID
+            <DropdownMenuItem disabled>
+                <Eye /> View Details
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>View Details</DropdownMenuItem>
-            <DropdownMenuItem disabled>Isolate Device</DropdownMenuItem>
+             <DropdownMenuItem disabled>
+                <ShieldOff /> Isolate Device
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled>
+              <Shield /> Change Policy
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive" disabled>
+                <Trash2 /> Remove Device
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

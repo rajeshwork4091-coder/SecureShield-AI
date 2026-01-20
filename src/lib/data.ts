@@ -5,16 +5,20 @@ export type Device = {
   status: 'Online' | 'Offline';
   policy: 'Strict' | 'Balanced' | 'Lenient';
   lastSeen: string;
+  riskLevel: 'High' | 'Medium' | 'Low';
+  os: 'Windows' | 'macOS' | 'Linux' | 'Tablet' | 'VM';
+  lastScan: string;
+  alertsCount: number;
 };
 
 export const devices: Device[] = [
-  { id: 'DEV001', name: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString() },
-  { id: 'DEV002', name: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString() },
-  { id: 'DEV003', name: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 2).toISOString() },
-  { id: 'DEV004', name: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString() },
-  { id: 'DEV005', name: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString() },
-  { id: 'DEV006', name: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: 'DEV007', name: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString() },
+  { id: 'DEV001', name: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'High', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 2).toISOString(), alertsCount: 3 },
+  { id: 'DEV002', name: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString(), riskLevel: 'Medium', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 5).toISOString(), alertsCount: 1 },
+  { id: 'DEV003', name: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 2).toISOString(), riskLevel: 'Low', os: 'VM', lastScan: new Date(Date.now() - 86400000 * 3).toISOString(), alertsCount: 0 },
+  { id: 'DEV004', name: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'Medium', os: 'macOS', lastScan: new Date(Date.now() - 3600000 * 1).toISOString(), alertsCount: 0 },
+  { id: 'DEV005', name: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: new Date().toISOString(), riskLevel: 'High', os: 'Linux', lastScan: new Date(Date.now() - 3600000 * 8).toISOString(), alertsCount: 5 },
+  { id: 'DEV006', name: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: new Date(Date.now() - 86400000 * 5).toISOString(), riskLevel: 'Low', os: 'Tablet', lastScan: new Date(Date.now() - 86400000 * 6).toISOString(), alertsCount: 0 },
+  { id: 'DEV007', name: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: new Date().toISOString(), riskLevel: 'Low', os: 'Windows', lastScan: new Date(Date.now() - 3600000 * 4).toISOString(), alertsCount: 0 },
 ];
 
 export type Threat = {

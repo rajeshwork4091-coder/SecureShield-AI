@@ -18,6 +18,7 @@ export default async function DevicesPage() {
         <div>
           <h1 className="font-headline text-3xl font-semibold">Device Management</h1>
           <p className="text-muted-foreground">View, manage, and protect your endpoint devices.</p>
+          <p className="pt-2 text-sm text-muted-foreground">Devices are enrolled using a lightweight endpoint agent.</p>
         </div>
         <Button disabled>
           <PlusCircle />
