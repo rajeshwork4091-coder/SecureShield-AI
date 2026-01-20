@@ -50,7 +50,7 @@ export function AlertList({ alerts }: AlertListProps) {
                 <span>{alert.detectionMethod}</span>
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
-              <p className="hidden text-sm text-muted-foreground lg:block">{format(new Date(alert.timestamp), 'Pp')}</p>
+              <p className="hidden text-sm text-muted-foreground lg:block">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -70,7 +70,7 @@ export function AlertList({ alerts }: AlertListProps) {
                 </div>
                  <div>
                   <p className="font-medium">Timestamp</p>
-                  <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'Pp')}</p>
+                  <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
                 </div>
               </div>
               <div>

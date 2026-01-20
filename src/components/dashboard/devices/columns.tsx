@@ -165,7 +165,7 @@ export const columns: ColumnDef<Device>[] = [
   {
     accessorKey: 'lastSeen',
     header: 'Last Seen',
-    cell: ({ row }) => format(new Date(row.getValue('lastSeen')), 'Pp'),
+    cell: ({ row }) => format(new Date(row.getValue('lastSeen')), 'yyyy-MM-dd HH:mm:ss'),
   },
   {
     id: 'actions',
