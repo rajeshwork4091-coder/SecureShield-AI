@@ -16,6 +16,9 @@ export default function PoliciesPage() {
           <PolicyCard key={policy.id} policy={policy} />
         ))}
       </div>
+       <div className="pt-6 text-center text-sm text-muted-foreground">
+        <p>Policy changes are logged for audit and compliance.</p>
+      </div>
     </div>
   );
 }

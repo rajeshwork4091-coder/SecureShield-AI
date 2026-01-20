@@ -48,6 +48,11 @@ export type SecurityPolicy = {
   id: string;
   name: 'Strict' | 'Balanced' | 'Lenient';
   description: string;
+  recommendedUse: string;
+  aiSensitivity: 'High' | 'Medium' | 'Low';
+  securityLevel: 'High' | 'Medium' | 'Low';
+  performanceImpact: 'High' | 'Medium' | 'Low';
+  deviceCount: number;
   settings: {
     scanLevel: 'quick' | 'full' | 'deep';
     autoQuarantine: boolean;
@@ -56,9 +61,39 @@ export type SecurityPolicy = {
 };
 
 export const securityPolicies: SecurityPolicy[] = [
-  { id: 'POL001', name: 'Strict', description: 'Maximum security for critical assets. May impact performance.', settings: { scanLevel: 'deep', autoQuarantine: true, offlineProtection: true } },
-  { id: 'POL002', name: 'Balanced', description: 'Recommended for most devices. Good balance of security and performance.', settings: { scanLevel: 'full', autoQuarantine: true, offlineProtection: true } },
-  { id: 'POL003', name: 'Lenient', description: 'Basic protection for low-risk devices. Minimal performance impact.', settings: { scanLevel: 'quick', autoQuarantine: false, offlineProtection: false } },
+  { 
+    id: 'POL001', 
+    name: 'Strict', 
+    description: 'Maximum security for critical assets. May impact performance.', 
+    recommendedUse: 'Recommended for finance, servers, and executive devices.',
+    aiSensitivity: 'High',
+    securityLevel: 'High',
+    performanceImpact: 'High',
+    deviceCount: devices.filter(d => d.policy === 'Strict').length,
+    settings: { scanLevel: 'deep', autoQuarantine: true, offlineProtection: true } 
+  },
+  { 
+    id: 'POL002', 
+    name: 'Balanced', 
+    description: 'Recommended for most devices. Good balance of security and performance.',
+    recommendedUse: 'Recommended for general office devices.',
+    aiSensitivity: 'Medium',
+    securityLevel: 'Medium',
+    performanceImpact: 'Medium',
+    deviceCount: devices.filter(d => d.policy === 'Balanced').length,
+    settings: { scanLevel: 'full', autoQuarantine: true, offlineProtection: true } 
+  },
+  { 
+    id: 'POL003', 
+    name: 'Lenient', 
+    description: 'Basic protection for low-risk devices. Minimal performance impact.',
+    recommendedUse: 'Recommended for low-risk or temporary devices.',
+    aiSensitivity: 'Low',
+    securityLevel: 'Low',
+    performanceImpact: 'Low',
+    deviceCount: devices.filter(d => d.policy === 'Lenient').length,
+    settings: { scanLevel: 'quick', autoQuarantine: false, offlineProtection: false } 
+  },
 ];
 
 
