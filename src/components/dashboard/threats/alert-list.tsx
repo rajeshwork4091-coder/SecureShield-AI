@@ -1,6 +1,7 @@
 'use client';
 
 import type { Threat } from '@/lib/data';
+import { devices } from '@/lib/data';
 import {
   Accordion,
   AccordionContent,
@@ -10,8 +11,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Bot, Cpu, File, ShieldQuestion } from 'lucide-react';
+import { AlertTriangle, Bot, Cpu, File, ShieldQuestion, Lock, ShieldAlert, Check } from 'lucide-react';
 import { format } from 'date-fns';
+import { Progress } from '@/components/ui/progress';
 
 interface AlertListProps {
   alerts: Threat[];
@@ -23,16 +25,36 @@ const severityVariantMap = {
   Low: 'outline',
 } as const;
 
+const statusVariantMap = {
+  Active: 'destructive',
+  Resolved: 'outline',
+  Quarantined: 'secondary',
+} as const;
+
 const detectionMethodIconMap = {
   'Anomaly Detection': <Bot className="h-4 w-4" />,
   'Signature Matching': <File className="h-4 w-4" />,
   'Behavioral Analysis': <Cpu className="h-4 w-4" />,
 };
 
+const getExplanation = (alert: Threat) => {
+    switch(alert.type) {
+        case 'Ransomware Behavior': return 'Detected due to unusual mass file encryption activity.';
+        case 'Malware Detected': return 'Detected a known malware signature matching a file on the device.';
+        case 'Phishing Attempt': return 'Outbound network traffic to a known malicious domain was blocked.';
+        case 'Unusual Network Traffic': return 'Anomalous outbound data transfer detected, exceeding normal benchmarks.';
+        default: return 'Threat detected based on system analysis.';
+    }
+}
+
+
 export function AlertList({ alerts }: AlertListProps) {
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
-      {alerts.map((alert) => (
+      {alerts.map((alert) => {
+        const device = devices.find(d => d.name === alert.device);
+        
+        return (
         <AccordionItem value={alert.id} key={alert.id} className="rounded-lg border bg-card px-4">
           <AccordionTrigger className="hover:no-underline">
             <div className="flex w-full items-center gap-4 text-left">
@@ -50,35 +72,48 @@ export function AlertList({ alerts }: AlertListProps) {
                 <span>{alert.detectionMethod}</span>
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
+              <Badge variant={statusVariantMap[alert.status]}>{alert.status}</Badge>
               <p className="hidden text-sm text-muted-foreground lg:block">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
-                <div>
-                  <p className="font-medium">Device</p>
-                  <p className="text-muted-foreground">{alert.device}</p>
+             <div className="space-y-6 pt-2">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-sm md:grid-cols-4">
+                    <div>
+                        <p className="font-medium">Device</p>
+                        <p className="text-muted-foreground">{alert.device}</p>
+                    </div>
+                     <div>
+                        <p className="font-medium">Device Policy</p>
+                        <p className="text-muted-foreground">{device?.policy || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium">Status</p>
+                        <p className="text-muted-foreground">{alert.status}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium">Timestamp</p>
+                        <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
+                    </div>
+                    <div className="col-span-2 md:col-span-4">
+                        <p className="font-medium">Risk Score: {alert.riskScore}/100</p>
+                        <Progress value={alert.riskScore} className="mt-1 h-2" />
+                    </div>
                 </div>
-                <div>
-                  <p className="font-medium">Risk Score</p>
-                  <p className="text-muted-foreground">{alert.riskScore}/100</p>
+
+                <div className="space-y-4">
+                    <div>
+                        <p className="font-medium">AI-Generated Explanation</p>
+                        <p className="text-sm text-muted-foreground">{getExplanation(alert)}</p>
+                    </div>
+                    <div>
+                        <p className="font-medium">Affected File / Process</p>
+                        <p className="font-code text-sm text-muted-foreground">{alert.details.file !== 'N/A' ? alert.details.file : alert.details.process}</p>
+                    </div>
                 </div>
-                <div>
-                  <p className="font-medium">Status</p>
-                  <p className="text-muted-foreground">{alert.status}</p>
+
                 </div>
-                 <div>
-                  <p className="font-medium">Timestamp</p>
-                  <p className="text-muted-foreground">{format(new Date(alert.timestamp), 'yyyy-MM-dd HH:mm:ss')}</p>
-                </div>
-              </div>
-              <div>
-                <p className="font-medium">Affected File</p>
-                <p className="font-code text-sm text-muted-foreground">{alert.details.file}</p>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-2 border-t pt-4">
+            <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
               <Button
                 size="sm"
                 disabled
@@ -87,15 +122,22 @@ export function AlertList({ alerts }: AlertListProps) {
                 Explain with AI
               </Button>
               <Button size="sm" variant="outline" disabled>
+                 <Lock className="mr-2 h-4 w-4" />
                 Isolate Device
               </Button>
+               <Button size="sm" variant="outline" disabled>
+                <ShieldAlert className="mr-2 h-4 w-4" />
+                Quarantine Threat
+              </Button>
               <Button size="sm" variant="outline" disabled>
+                <Check className="mr-2 h-4 w-4" />
                 Mark as Resolved
               </Button>
             </div>
           </AccordionContent>
         </AccordionItem>
-      ))}
+        )
+      })}
     </Accordion>
   );
 }
