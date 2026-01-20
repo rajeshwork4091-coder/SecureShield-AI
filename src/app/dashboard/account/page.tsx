@@ -27,6 +27,14 @@ export default function AccountPage() {
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" defaultValue="john.doe@example.com" disabled />
             </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <p className="text-sm text-muted-foreground">Administrator</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Last login</Label>
+              <p className="text-sm text-muted-foreground">18 Jan 2026, 16:32 (Web)</p>
+            </div>
             <Button disabled>Save Changes</Button>
           </CardContent>
         </Card>
@@ -34,8 +42,9 @@ export default function AccountPage() {
           <CardHeader>
             <CardTitle>Multi-Factor Authentication</CardTitle>
             <CardDescription>Add an extra layer of security to your account.</CardDescription>
-          </CardHeader>
+          </Header>
           <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">Multi-factor authentication helps protect your account against unauthorized access.</p>
             <p className="text-sm text-muted-foreground">MFA is currently disabled.</p>
             <Button disabled>Enable MFA</Button>
           </CardContent>
