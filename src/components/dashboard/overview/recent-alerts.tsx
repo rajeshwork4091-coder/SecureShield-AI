@@ -15,29 +15,22 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Lock, ShieldAlert, Check } from 'lucide-react';
-
-const alerts = [
-  {
-    time: '10:45 AM',
-    device: 'Laptop-01',
-    threat: 'Ransomware',
-    status: 'Quarantined',
-  },
-  {
-    time: '09:30 AM',
-    device: 'PC-02',
-    threat: 'Suspicious Script',
-    status: 'Under Review',
-  },
-];
+import { Lock, ShieldAlert, Check, ShieldQuestion } from 'lucide-react';
+import type { Threat } from '@/lib/data';
+import { format } from 'date-fns';
 
 const statusVariantMap = {
-  Quarantined: 'destructive',
+  Quarantined: 'secondary',
   'Under Review': 'secondary',
+  Resolved: 'outline',
+  Active: 'destructive'
 } as const;
 
-export function RecentAlerts() {
+interface RecentAlertsProps {
+    alerts: Threat[];
+}
+
+export function RecentAlerts({ alerts }: RecentAlertsProps) {
   return (
     <Card>
       <CardHeader>
@@ -45,44 +38,54 @@ export function RecentAlerts() {
         <CardDescription>A summary of the latest security events.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Time</TableHead>
-              <TableHead>Device</TableHead>
-              <TableHead>Threat Type</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {alerts.map((alert, index) => (
-              <TableRow key={index}>
-                <TableCell>{alert.time}</TableCell>
-                <TableCell className="font-medium">{alert.device}</TableCell>
-                <TableCell>{alert.threat}</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariantMap[alert.status as keyof typeof statusVariantMap]}>
-                    {alert.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" disabled>
-                      <Lock /> Isolate Device
-                    </Button>
-                    <Button variant="outline" size="sm" disabled>
-                      <ShieldAlert /> Quarantine Threat
-                    </Button>
-                    <Button variant="outline" size="sm" disabled>
-                      <Check /> Mark as Resolved
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        {alerts.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+                <ShieldQuestion className="mx-auto h-12 w-12 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold">No Recent Alerts</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                Your environment is currently clear of any detected threats.
+                </p>
+            </div>
+        ) : (
+            <Table>
+            <TableHeader>
+                <TableRow>
+                <TableHead>Time</TableHead>
+                <TableHead>Device</TableHead>
+                <TableHead>Threat Type</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {alerts.map((alert) => (
+                <TableRow key={alert.id}>
+                    <TableCell>{format(new Date(alert.timestamp), 'p')}</TableCell>
+                    <TableCell className="font-medium">{alert.device}</TableCell>
+                    <TableCell>{alert.type}</TableCell>
+                    <TableCell>
+                    <Badge variant={statusVariantMap[alert.status as keyof typeof statusVariantMap]}>
+                        {alert.status}
+                    </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm" disabled>
+                        <Lock /> Isolate Device
+                        </Button>
+                        <Button variant="outline" size="sm" disabled>
+                        <ShieldAlert /> Quarantine Threat
+                        </Button>
+                        <Button variant="outline" size="sm" disabled>
+                        <Check /> Mark as Resolved
+                        </Button>
+                    </div>
+                    </TableCell>
+                </TableRow>
+                ))}
+            </TableBody>
+            </Table>
+        )}
       </CardContent>
     </Card>
   );
