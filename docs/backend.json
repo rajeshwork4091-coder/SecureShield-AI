@@ -142,6 +142,25 @@
             "file": { "type": "string" },
             "process": { "type": "string" }
           }
+        },
+        "aiExplanation": {
+          "type": "string",
+          "description": "AI-generated explanation of the threat."
+        },
+        "explanationGeneratedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "quarantinedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resolvedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "policyAtDetection": {
+          "type": "string"
         }
       },
       "required": ["type", "severity", "status", "timestamp", "device", "detectionMethod"]

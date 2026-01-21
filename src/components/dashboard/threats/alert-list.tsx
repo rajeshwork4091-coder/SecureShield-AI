@@ -1,6 +1,7 @@
 'use client';
 
-import type { Threat } from '@/lib/data';
+import { useState } from 'react';
+import type { Threat, Device } from '@/lib/data';
 import {
   Accordion,
   AccordionContent,
@@ -10,11 +11,17 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { AlertTriangle, Bot, Cpu, File, ShieldQuestion, Lock, ShieldAlert, Check } from 'lucide-react';
+import { AlertTriangle, Bot, Cpu, File, ShieldQuestion, Lock, ShieldAlert, Check, Loader2 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { useFirestore } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { isolateDeviceFromThreat, updateAlertStatus, explainThreatWithAI } from '@/lib/firebase/firestore';
 
 interface AlertListProps {
   alerts: Threat[];
+  devices: Device[];
+  tenantId: string | null;
+  userId: string | undefined;
 }
 
 const severityVariantMap = {
@@ -35,18 +42,59 @@ const detectionMethodIconMap = {
   'Behavioral Analysis': <Cpu className="h-4 w-4" />,
 };
 
-const getExplanation = (alert: Threat) => {
-    switch(alert.type) {
-        case 'Ransomware Behavior': return 'Detected due to unusual mass file encryption activity.';
-        case 'Malware Detected': return 'Detected a known malware signature matching a file on the device.';
-        case 'Phishing Attempt': return 'Outbound network traffic to a known malicious domain was blocked.';
-        case 'Unusual Network Traffic': return 'Anomalous outbound data transfer detected, exceeding normal benchmarks.';
-        default: return 'Threat detected based on system analysis.';
+export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [updatingAlerts, setUpdatingAlerts] = useState<Record<string, boolean>>({});
+
+  const handleAction = async (alertId: string, action: () => Promise<any>) => {
+    setUpdatingAlerts((prev) => ({ ...prev, [alertId]: true }));
+    try {
+      await action();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Action Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    } finally {
+      setUpdatingAlerts((prev) => ({ ...prev, [alertId]: false }));
     }
-}
+  };
+  
+  const handleIsolate = (alert: Threat) => {
+    const device = devices.find(d => d.deviceName === alert.device);
+    if (!firestore || !tenantId || !userId || !device) return;
+    handleAction(alert.id, async () => {
+      await isolateDeviceFromThreat(firestore, tenantId, device.id, alert.id, userId);
+      toast({ title: 'Device Isolated', description: `${device.deviceName} has been isolated.` });
+    });
+  };
+  
+  const handleQuarantine = (alertId: string) => {
+    if (!firestore || !tenantId || !userId) return;
+    handleAction(alertId, async () => {
+      await updateAlertStatus(firestore, tenantId, alertId, 'Quarantined', userId);
+      toast({ title: 'Threat Quarantined' });
+    });
+  };
+  
+  const handleResolve = (alertId: string) => {
+    if (!firestore || !tenantId || !userId) return;
+    handleAction(alertId, async () => {
+      await updateAlertStatus(firestore, tenantId, alertId, 'Resolved', userId);
+      toast({ title: 'Threat Resolved' });
+    });
+  };
 
+  const handleExplain = (alertId: string) => {
+    if (!firestore || !tenantId) return;
+     handleAction(alertId, async () => {
+       await explainThreatWithAI(firestore, tenantId, alertId);
+       toast({ title: 'Explanation Generated' });
+     });
+  };
 
-export function AlertList({ alerts }: AlertListProps) {
   if (alerts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
@@ -62,9 +110,10 @@ export function AlertList({ alerts }: AlertListProps) {
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
       {alerts.map((alert) => {
-        // The device policy can be added back here later by fetching device data
-        const devicePolicy = 'N/A';
-        
+        const device = devices.find(d => d.deviceName === alert.device);
+        const devicePolicy = device?.policy || 'N/A';
+        const isUpdating = updatingAlerts[alert.id];
+
         return (
         <AccordionItem value={alert.id} key={alert.id} className="rounded-lg border bg-card px-4">
           <AccordionTrigger className="hover:no-underline">
@@ -115,33 +164,49 @@ export function AlertList({ alerts }: AlertListProps) {
                 <div className="space-y-4">
                     <div>
                         <p className="font-medium">AI-Generated Explanation</p>
-                        <p className="text-sm text-muted-foreground">{getExplanation(alert)}</p>
+                        <p className="text-sm text-muted-foreground">{alert.aiExplanation || 'No explanation generated yet.'}</p>
                     </div>
                     <div>
                         <p className="font-medium">Affected File / Process</p>
-                        <p className="font-code text-sm text-muted-foreground">{alert.details.file !== 'N/A' ? alert.details.file : alert.details.process}</p>
+                        <code className="text-sm text-muted-foreground">{alert.details.file !== 'N/A' ? alert.details.file : alert.details.process}</code>
                     </div>
                 </div>
 
-                </div>
+            </div>
             <div className="mt-4 flex flex-wrap gap-2 border-t pt-4">
               <Button
                 size="sm"
-                disabled
+                onClick={() => handleExplain(alert.id)}
+                disabled={isUpdating || !!alert.aiExplanation}
               >
-                <Bot className="mr-2 h-4 w-4" />
+                {isUpdating ? <Loader2 className="animate-spin" /> : <Bot />}
                 Explain with AI
               </Button>
-              <Button size="sm" variant="outline" disabled>
-                 <Lock className="mr-2 h-4 w-4" />
+              <Button 
+                size="sm"
+                variant="outline"
+                onClick={() => handleIsolate(alert)}
+                disabled={isUpdating || alert.status !== 'Active' || device?.status === 'Isolated'}
+              >
+                 {isUpdating ? <Loader2 className="animate-spin" /> : <Lock />}
                 Isolate Device
               </Button>
-               <Button size="sm" variant="outline" disabled>
-                <ShieldAlert className="mr-2 h-4 w-4" />
+               <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleQuarantine(alert.id)}
+                disabled={isUpdating || alert.status !== 'Active'}
+               >
+                {isUpdating ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
                 Quarantine Threat
               </Button>
-              <Button size="sm" variant="outline" disabled>
-                <Check className="mr-2 h-4 w-4" />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleResolve(alert.id)}
+                disabled={isUpdating || alert.status === 'Resolved'}
+              >
+                {isUpdating ? <Loader2 className="animate-spin" /> : <Check />}
                 Mark as Resolved
               </Button>
             </div>

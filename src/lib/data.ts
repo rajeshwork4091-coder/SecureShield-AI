@@ -41,6 +41,11 @@ export type Threat = {
     process: string;
   };
   rawTelemetry: string;
+  aiExplanation?: string;
+  explanationGeneratedAt?: any;
+  quarantinedAt?: any;
+  resolvedAt?: any;
+  policyAtDetection?: string;
 };
 
 export const threats: Threat[] = [
