@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile in the system.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The user's unique ID, matching their Firebase Auth UID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "companyName": {
+          "type": "string",
+          "description": "The name of the company the user belongs to."
+        },
+        "tenantId": {
+          "type": "string",
+          "description": "The ID of the tenant (organization) the user belongs to."
+        }
+      },
+      "required": ["id", "email", "tenantId"]
+    },
+    "Tenant": {
+      "title": "Tenant",
+      "description": "Represents a tenant organization.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the tenant organization."
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "The UID of the user who owns/created the tenant."
+        }
+      },
+      "required": ["name", "ownerId"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/entities/UserProfile"
+      },
+      "description": "Stores public information about a user."
+    },
+    "/tenants/{tenantId}": {
+      "schema": {
+        "$ref": "#/entities/Tenant"
+      },
+      "description": "Stores information about a tenant organization."
+    }
+  }
+}
