@@ -47,6 +47,8 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   const { toast } = useToast();
   const [updatingAlerts, setUpdatingAlerts] = useState<Record<string, boolean>>({});
 
+  const safeDevices = devices ?? [];
+
   const handleAction = async (alertId: string, action: () => Promise<any>) => {
     setUpdatingAlerts((prev) => ({ ...prev, [alertId]: true }));
     try {
@@ -63,7 +65,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   };
   
   const handleIsolate = (alert: Threat) => {
-    const device = devices.find(d => d.deviceName === alert.device);
+    const device = safeDevices.find(d => d.deviceName === alert.device);
     if (!firestore || !tenantId || !userId || !device) return;
     handleAction(alert.id, async () => {
       await isolateDeviceFromThreat(firestore, tenantId, device.id, alert.id, userId);
@@ -110,7 +112,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
       {alerts.map((alert) => {
-        const device = devices.find(d => d.deviceName === alert.device);
+        const device = safeDevices.find(d => d.deviceName === alert.device);
         const devicePolicy = device?.policy || 'N/A';
         const isUpdating = updatingAlerts[alert.id];
 
