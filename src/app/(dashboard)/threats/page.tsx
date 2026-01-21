@@ -17,16 +17,17 @@ export default function ThreatsPage() {
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [alerts, setAlerts] = useState<Threat[]>([]);
   const [devices, setDevices] = useState<Device[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [alertsLoading, setAlertsLoading] = useState(true);
+  const [devicesLoading, setDevicesLoading] = useState(true);
 
   useEffect(() => {
     if (userLoading || !firestore) return;
     if (!user) {
-      setLoading(false);
+      setAlertsLoading(false);
+      setDevicesLoading(false);
       return;
     }
 
-    let unsub: (() => void) | undefined;
     const fetchTenantId = async () => {
       try {
         const userDocRef = doc(firestore, 'users', user.uid);
@@ -34,25 +35,22 @@ export default function ThreatsPage() {
         if (userDocSnap.exists()) {
           setTenantId(userDocSnap.data().tenantId);
         } else {
-          setLoading(false);
+          setAlertsLoading(false);
+          setDevicesLoading(false);
         }
       } catch (error) {
         console.error("Error fetching user tenant:", error);
-        setLoading(false);
+        setAlertsLoading(false);
+        setDevicesLoading(false);
       }
     };
     fetchTenantId();
-    
-    return () => {
-      if (unsub) unsub();
-    };
   }, [user, firestore, userLoading]);
 
   useEffect(() => {
     if (!tenantId || !firestore) return;
 
-    setLoading(true);
-    
+    setAlertsLoading(true);
     const alertsQuery = query(
       collection(firestore, 'tenants', tenantId, 'alerts'),
       orderBy('timestamp', 'desc')
@@ -67,12 +65,13 @@ export default function ThreatsPage() {
         } as Threat;
       });
       setAlerts(alertsData);
-      if(devices.length > 0) setLoading(false);
+      setAlertsLoading(false);
     }, (error) => {
       console.error("Error fetching alerts:", error);
-      setLoading(false);
+      setAlertsLoading(false);
     });
 
+    setDevicesLoading(true);
     const devicesQuery = query(collection(firestore, 'tenants', tenantId, 'devices'));
     const devicesUnsub = onSnapshot(devicesQuery, (snapshot) => {
       const devicesData = snapshot.docs.map((doc) => ({
@@ -80,10 +79,10 @@ export default function ThreatsPage() {
         ...doc.data(),
       })) as Device[];
       setDevices(devicesData);
-      if(alerts.length > 0 || snapshot.empty) setLoading(false);
+      setDevicesLoading(false);
     }, (error) => {
        console.error("Error fetching devices:", error);
-       setLoading(false);
+       setDevicesLoading(false);
     });
 
     return () => {
@@ -91,6 +90,8 @@ export default function ThreatsPage() {
       devicesUnsub();
     };
   }, [tenantId, firestore]);
+
+  const loading = userLoading || alertsLoading || devicesLoading;
 
   return (
     <div className="space-y-6">
