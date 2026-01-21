@@ -58,15 +58,20 @@ service cloud.firestore {
 
         // Prevent delete from client
         allow delete: if false;
+      }
+      
+      // Rules for threat alerts in a tenant
+      match /alerts/{alertId} {
+        // Tenant members can read alerts for their own tenant
+        allow read, list: if isSignedIn() &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
 
-        // Rules for threat alerts on a device
-        match /alerts/{alertId} {
-          allow read, list: if isSignedIn() &&
-            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
-
-          // Allow agents/backend to create alerts
-          allow create: if isSignedIn();
-        }
+        // Only the tenant owner can update an alert (e.g. resolve it)
+        allow update: if isSignedIn() &&
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerId == request.auth.uid;
+          
+        // Only agents/backend services can create alerts
+        allow create: if false;
       }
 
       // Rules for audit logs in a tenant

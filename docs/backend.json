@@ -123,18 +123,28 @@
           "type": "string",
           "enum": ["Active", "Resolved", "Quarantined"]
         },
-        "detectedAt": {
+        "timestamp": {
           "type": "string",
           "format": "date-time"
         },
-        "engine": {
+        "detectionMethod": {
           "type": "string"
         },
-        "description": {
+        "device": {
           "type": "string"
+        },
+        "riskScore": {
+          "type": "number"
+        },
+        "details": {
+          "type": "object",
+          "properties": {
+            "file": { "type": "string" },
+            "process": { "type": "string" }
+          }
         }
       },
-      "required": ["type", "severity", "status", "detectedAt"]
+      "required": ["type", "severity", "status", "timestamp", "device", "detectionMethod"]
     },
     "AuditLog": {
       "title": "Audit Log",
@@ -218,11 +228,11 @@
       },
       "description": "Stores devices belonging to a specific tenant."
     },
-    "/tenants/{tenantId}/devices/{deviceId}/alerts/{alertId}": {
+    "/tenants/{tenantId}/alerts/{alertId}": {
       "schema": {
         "$ref": "#/entities/ThreatAlert"
       },
-      "description": "Stores security alerts for a specific device within a tenant."
+      "description": "Stores security alerts for a specific tenant."
     },
     "/tenants/{tenantId}/auditLogs/{logId}": {
       "schema": {

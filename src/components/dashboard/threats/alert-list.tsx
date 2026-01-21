@@ -1,7 +1,6 @@
 'use client';
 
 import type { Threat } from '@/lib/data';
-import { devices } from '@/lib/data';
 import {
   Accordion,
   AccordionContent,
@@ -48,10 +47,23 @@ const getExplanation = (alert: Threat) => {
 
 
 export function AlertList({ alerts }: AlertListProps) {
+  if (alerts.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-lg border border-dashed p-12 text-center">
+        <ShieldQuestion className="mx-auto h-12 w-12 text-muted-foreground" />
+        <h3 className="mt-4 text-lg font-semibold">No Alerts Found</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your environment is currently clear of any detected threats.
+        </p>
+      </div>
+    );
+  }
+  
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
       {alerts.map((alert) => {
-        const device = devices.find(d => d.name === alert.device);
+        // The device policy can be added back here later by fetching device data
+        const devicePolicy = 'N/A';
         
         return (
         <AccordionItem value={alert.id} key={alert.id} className="rounded-lg border bg-card px-4">
@@ -84,7 +96,7 @@ export function AlertList({ alerts }: AlertListProps) {
                     </div>
                      <div>
                         <p className="font-medium">Device Policy</p>
-                        <p className="text-muted-foreground">{device?.policy || 'N/A'}</p>
+                        <p className="text-muted-foreground">{devicePolicy}</p>
                     </div>
                     <div>
                         <p className="font-medium">Status</p>

@@ -32,7 +32,7 @@ export type Threat = {
   type: string;
   severity: 'High' | 'Medium' | 'Low';
   device: string;
-  timestamp: string;
+  timestamp: any; // Can be a Firestore Timestamp or an ISO string
   status: 'Active' | 'Resolved' | 'Quarantined';
   detectionMethod: string;
   riskScore: number;

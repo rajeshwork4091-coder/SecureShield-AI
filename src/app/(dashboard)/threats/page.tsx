@@ -1,13 +1,84 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, doc, getDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import type { Threat } from '@/lib/data';
 import { AlertList } from '@/components/dashboard/threats/alert-list';
-import { threats } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ThreatsPage() {
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+  const [alerts, setAlerts] = useState<Threat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userLoading || !firestore) {
+      return;
+    }
+
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    let unsubscribe: (() => void) | undefined;
+
+    const fetchAlerts = async () => {
+      try {
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const tenantId = userDocSnap.data().tenantId;
+          if (tenantId) {
+            const alertsQuery = query(
+              collection(firestore, 'tenants', tenantId, 'alerts'),
+              orderBy('timestamp', 'desc')
+            );
+
+            unsubscribe = onSnapshot(alertsQuery, (querySnapshot) => {
+              const alertsData = querySnapshot.docs.map((doc) => {
+                const data = doc.data();
+                return {
+                  id: doc.id,
+                  ...data,
+                  // Convert Firestore Timestamp to ISO string for consistency
+                  timestamp: data.timestamp?.toDate?.().toISOString() || '',
+                } as Threat;
+              });
+              setAlerts(alertsData);
+              setLoading(false);
+            }, (error) => {
+              console.error("Error fetching alerts:", error);
+              setLoading(false);
+            });
+          } else {
+            setLoading(false);
+          }
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching user tenant:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchAlerts();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user, firestore, userLoading]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -61,7 +132,15 @@ export default function ThreatsPage() {
           </div>
         </CardContent>
       </Card>
-      <AlertList alerts={threats} />
+      {loading ? (
+         <div className="space-y-2">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+      ) : (
+        <AlertList alerts={alerts} />
+      )}
     </div>
   );
 }
