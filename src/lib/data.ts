@@ -59,16 +59,16 @@ export type SecurityPolicy = {
   securityLevel: 'High' | 'Medium' | 'Low';
   performanceImpact: 'High' | 'Medium' | 'Low';
   deviceCount: number;
-  settings: {
-    scanLevel: 'quick' | 'full' | 'deep';
-    autoQuarantine: boolean;
-    offlineProtection: boolean;
-  };
+  scanLevel: 'quick' | 'full' | 'deep';
+  autoQuarantine: boolean;
+  offlineProtection: boolean;
+  updatedAt?: any;
+  updatedBy?: string;
 };
 
 export const securityPolicies: SecurityPolicy[] = [
   { 
-    id: 'POL001', 
+    id: 'Strict', 
     name: 'Strict', 
     description: 'Maximum security for critical assets. May impact performance.', 
     recommendedUse: 'Recommended for finance, servers, and executive devices.',
@@ -76,10 +76,12 @@ export const securityPolicies: SecurityPolicy[] = [
     securityLevel: 'High',
     performanceImpact: 'High',
     deviceCount: devices.filter(d => d.policy === 'Strict').length,
-    settings: { scanLevel: 'deep', autoQuarantine: true, offlineProtection: true } 
+    scanLevel: 'deep', 
+    autoQuarantine: true, 
+    offlineProtection: true 
   },
   { 
-    id: 'POL002', 
+    id: 'Balanced', 
     name: 'Balanced', 
     description: 'Recommended for most devices. Good balance of security and performance.',
     recommendedUse: 'Recommended for general office devices.',
@@ -87,10 +89,12 @@ export const securityPolicies: SecurityPolicy[] = [
     securityLevel: 'Medium',
     performanceImpact: 'Medium',
     deviceCount: devices.filter(d => d.policy === 'Balanced').length,
-    settings: { scanLevel: 'full', autoQuarantine: true, offlineProtection: true } 
+    scanLevel: 'full', 
+    autoQuarantine: true, 
+    offlineProtection: true
   },
   { 
-    id: 'POL003', 
+    id: 'Lenient', 
     name: 'Lenient', 
     description: 'Basic protection for low-risk devices. Minimal performance impact.',
     recommendedUse: 'Recommended for low-risk or temporary devices.',
@@ -98,7 +102,9 @@ export const securityPolicies: SecurityPolicy[] = [
     securityLevel: 'Low',
     performanceImpact: 'Low',
     deviceCount: devices.filter(d => d.policy === 'Lenient').length,
-    settings: { scanLevel: 'quick', autoQuarantine: false, offlineProtection: false } 
+    scanLevel: 'quick', 
+    autoQuarantine: false, 
+    offlineProtection: false 
   },
 ];
 

@@ -1,19 +1,23 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import type { SecurityPolicy } from '@/lib/data';
-import { ShieldAlert, ShieldCheck, ShieldQuestion, BrainCircuit, Zap, AlertTriangle } from 'lucide-react';
-import type { FC } from 'react';
+import { ShieldAlert, ShieldCheck, ShieldQuestion, BrainCircuit, Zap, AlertTriangle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useFirestore } from '@/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { saveSecurityPolicy } from '@/lib/firebase/firestore';
 
 interface PolicyCardProps {
   policy: SecurityPolicy;
+  tenantId: string | null;
+  userId: string | undefined;
 }
 
 const policyIcons = {
@@ -28,7 +32,50 @@ const levelVariantMap = {
   Low: 'outline',
 } as const;
 
-export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
+export const PolicyCard: React.FC<PolicyCardProps> = ({ policy, tenantId, userId }) => {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  
+  const [scanLevel, setScanLevel] = useState(policy.scanLevel);
+  const [autoQuarantine, setAutoQuarantine] = useState(policy.autoQuarantine);
+  const [offlineProtection, setOfflineProtection] = useState(policy.offlineProtection);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    setScanLevel(policy.scanLevel);
+    setAutoQuarantine(policy.autoQuarantine);
+    setOfflineProtection(policy.offlineProtection);
+    setIsDirty(false);
+  }, [policy]);
+
+  useEffect(() => {
+    const isChanged =
+      scanLevel !== policy.scanLevel ||
+      autoQuarantine !== policy.autoQuarantine ||
+      offlineProtection !== policy.offlineProtection;
+    setIsDirty(isChanged);
+  }, [scanLevel, autoQuarantine, offlineProtection, policy]);
+
+  const handleSave = async () => {
+    if (!firestore || !tenantId || !userId) {
+       toast({ variant: 'destructive', title: 'Error', description: 'Cannot save policy. Missing required information.' });
+       return;
+    }
+
+    setIsSaving(true);
+    try {
+      const settings = { scanLevel, autoQuarantine, offlineProtection };
+      await saveSecurityPolicy(firestore, tenantId, policy.name, settings, userId);
+      toast({ title: 'Policy Saved', description: `The "${policy.name}" policy has been updated.` });
+    } catch (error: any) {
+       toast({ variant: 'destructive', title: 'Save Failed', description: error.message || 'Could not save the policy.' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
@@ -66,7 +113,7 @@ export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
 
         <div className="space-y-2">
           <Label>Scan Level</Label>
-          <Select defaultValue={policy.settings.scanLevel} disabled>
+          <Select value={scanLevel} onValueChange={(value) => setScanLevel(value as any)}>
             <SelectTrigger>
               <SelectValue placeholder="Select scan level" />
             </SelectTrigger>
@@ -82,14 +129,14 @@ export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
             <Label>Auto-Quarantine</Label>
             <p className="text-xs text-muted-foreground">Automatically quarantine high-risk threats.</p>
           </div>
-          <Switch defaultChecked={policy.settings.autoQuarantine} disabled />
+          <Switch checked={autoQuarantine} onCheckedChange={setAutoQuarantine} />
         </div>
         <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
           <div>
             <Label>Offline Protection</Label>
             <p className="text-xs text-muted-foreground">Use cached definitions when offline.</p>
           </div>
-          <Switch defaultChecked={policy.settings.offlineProtection} disabled />
+          <Switch checked={offlineProtection} onCheckedChange={setOfflineProtection} />
         </div>
          {policy.name === 'Strict' && (
           <Alert variant="destructive" className="flex items-center gap-2">
@@ -104,20 +151,10 @@ export const PolicyCard: FC<PolicyCardProps> = ({ policy }) => {
         <div className="text-center text-sm text-muted-foreground">
           Applied to <span className="font-semibold">{policy.deviceCount}</span> devices
         </div>
-         <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="w-full" tabIndex={0}>
-                <Button disabled className="w-full">
-                  Save Policy
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Saving policies will be enabled in future versions.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Button onClick={handleSave} disabled={!isDirty || isSaving} className="w-full">
+          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSaving ? 'Saving...' : 'Save Policy'}
+        </Button>
       </CardFooter>
     </Card>
   );

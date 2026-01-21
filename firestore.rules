@@ -95,6 +95,20 @@ service cloud.firestore {
         // Tokens are write-once and cannot be read or updated from the client
         allow read, update, delete: if false;
       }
+
+      // Rules for security policies in a tenant
+      match /policies/{policyId} {
+        // Tenant members can read policies for their own tenant
+        allow read, list: if isSignedIn() &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
+
+        // Only the tenant owner can update a policy
+        allow update: if isSignedIn() &&
+          get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerId == request.auth.uid;
+          
+        // Policies are created via backend, not client
+        allow create, delete: if false;
+      }
     }
   }
 }

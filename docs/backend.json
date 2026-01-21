@@ -204,6 +204,48 @@
         }
       },
       "required": ["token", "expiresAt", "used", "createdBy", "createdAt"]
+    },
+    "SecurityPolicy": {
+      "title": "Security Policy",
+      "description": "Defines a security policy template for a tenant.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": ["Strict", "Balanced", "Lenient"]
+        },
+        "scanLevel": {
+          "type": "string"
+        },
+        "autoQuarantine": {
+          "type": "boolean"
+        },
+        "offlineProtection": {
+          "type": "boolean"
+        },
+        "aiSensitivity": {
+          "type": "string"
+        },
+        "securityLevel": {
+          "type": "string"
+        },
+        "performanceImpact": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedBy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "scanLevel",
+        "autoQuarantine",
+        "offlineProtection"
+      ]
     }
   },
   "auth": {
@@ -245,6 +287,12 @@
         "$ref": "#/entities/EnrollmentToken"
       },
       "description": "Stores single-use tokens for device enrollment."
+    },
+    "/tenants/{tenantId}/policies/{policyId}": {
+      "schema": {
+        "$ref": "#/entities/SecurityPolicy"
+      },
+      "description": "Stores security policy templates for a tenant."
     }
   }
 }

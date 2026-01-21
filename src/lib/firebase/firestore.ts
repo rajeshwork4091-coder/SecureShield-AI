@@ -104,3 +104,29 @@ export async function generateEnrollmentToken(
 
   return tokenValue;
 }
+
+export async function saveSecurityPolicy(
+  db: Firestore,
+  tenantId: string,
+  policyName: string,
+  settings: {
+    scanLevel: string;
+    autoQuarantine: boolean;
+    offlineProtection: boolean;
+  },
+  userId: string
+) {
+  if (!tenantId || !policyName || !userId) {
+    throw new Error('Missing required parameters to save policy.');
+  }
+
+  const policyRef = doc(db, 'tenants', tenantId, 'policies', policyName);
+
+  await updateDoc(policyRef, {
+    ...settings,
+    updatedAt: serverTimestamp(),
+    updatedBy: userId,
+  });
+
+  await writeAuditLog(db, tenantId, userId, 'POLICY_UPDATED', policyName, settings);
+}
