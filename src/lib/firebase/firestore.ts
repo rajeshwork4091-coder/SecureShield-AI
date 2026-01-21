@@ -8,6 +8,7 @@ import {
   addDoc,
   collection,
   type Firestore,
+  Timestamp,
 } from 'firebase/firestore';
 
 export type Policy = 'Strict' | 'Balanced' | 'Lenient';
@@ -81,4 +82,25 @@ export async function changeDevicePolicy(
   await writeAuditLog(db, tenantId, userId, 'POLICY_CHANGED', deviceId, {
     newPolicy: policy,
   });
+}
+
+export async function generateEnrollmentToken(
+  db: Firestore,
+  tenantId: string,
+  userId: string
+): Promise<string> {
+  if (!tenantId) throw new Error('Tenant ID is required to generate a token.');
+
+  const tokenValue = crypto.randomUUID();
+  const tokenRef = collection(db, 'tenants', tenantId, 'enrollmentTokens');
+  
+  await addDoc(tokenRef, {
+    token: tokenValue,
+    used: false,
+    expiresAt: Timestamp.fromDate(new Date(Date.now() + 15 * 60 * 1000)), // Expires in 15 minutes
+    createdBy: userId,
+    createdAt: serverTimestamp(),
+  });
+
+  return tokenValue;
 }

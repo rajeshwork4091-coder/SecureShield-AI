@@ -1,23 +1,19 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useFirestore } from '@/firebase';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
+import { generateEnrollmentToken } from '@/lib/firebase/firestore';
+import { Loader2 } from 'lucide-react';
 
 interface EnrollDeviceDialogProps {
   isOpen: boolean;
@@ -25,154 +21,96 @@ interface EnrollDeviceDialogProps {
   tenantId: string | null;
 }
 
-const formSchema = z.object({
-  deviceName: z.string().min(1, 'Device name is required'),
-  os: z.enum(['Windows', 'macOS', 'Linux', 'Tablet', 'VM', 'Other']),
-  policy: z.enum(['Strict', 'Balanced', 'Lenient']),
-  ipAddress: z.string().ip({ message: 'Invalid IP address' }),
-});
-
 export function EnrollDeviceDialog({ isOpen, onOpenChange, tenantId }: EnrollDeviceDialogProps) {
   const firestore = useFirestore();
+  const { user } = useUser();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      deviceName: '',
-      os: 'Windows',
-      policy: 'Balanced',
-      ipAddress: '192.168.1.',
-    },
-  });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore || !tenantId) {
+  const handleGenerateToken = async () => {
+    if (!firestore || !tenantId || !user) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Cannot enroll device. Tenant not found.',
+        description: 'Cannot generate token. User or tenant not found.',
       });
       return;
     }
 
+    setIsLoading(true);
+    setToken(null);
     try {
-      const devicesRef = collection(firestore, 'tenants', tenantId, 'devices');
-      await addDoc(devicesRef, {
-        ...values,
-        riskLevel: 'Low',
-        status: 'Online',
-        isolated: false,
-        lastSeen: serverTimestamp(),
-        createdAt: serverTimestamp(),
-      });
+      const generatedToken = await generateEnrollmentToken(firestore, tenantId, user.uid);
+      setToken(generatedToken);
       toast({
-        title: 'Device Enrolled',
-        description: `${values.deviceName} has been successfully enrolled.`,
+        title: 'Token Generated',
+        description: 'This token is valid for 15 minutes.',
       });
-      onOpenChange(false);
-      form.reset();
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not enroll the device.',
+        description: error.message || 'Could not generate the enrollment token.',
       });
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setToken(null);
+    onOpenChange(false);
+  };
+  
+  const handleCopyToClipboard = () => {
+    if (!token) return;
+    navigator.clipboard.writeText(token);
+    toast({
+        title: "Copied!",
+        description: "Enrollment token copied to clipboard."
+    })
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Enroll New Device</DialogTitle>
           <DialogDescription>
-            Enter the details for the new device to enroll it into your tenant.
+            Generate a secure, one-time enrollment token for installing the SecureShield agent on a new device.
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="deviceName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Device Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., finance-laptop-02" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="os"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Operating System</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an OS" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Windows">Windows</SelectItem>
-                      <SelectItem value="macOS">macOS</SelectItem>
-                      <SelectItem value="Linux">Linux</SelectItem>
-                      <SelectItem value="Tablet">Tablet</SelectItem>
-                      <SelectItem value="VM">VM</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="policy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Security Policy</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a policy" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Strict">Strict</SelectItem>
-                      <SelectItem value="Balanced">Balanced</SelectItem>
-                      <SelectItem value="Lenient">Lenient</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name="ipAddress"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>IP Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 192.168.1.100" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Enrolling...' : 'Enroll Device'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        
+        <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+                This token is single-use and expires in 15 minutes. Provide it to the endpoint agent during installation.
+            </p>
+
+            <Button onClick={handleGenerateToken} disabled={isLoading} className="w-full">
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isLoading ? 'Generating...' : 'Generate Enrollment Token'}
+            </Button>
+
+            {token && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Generated Token:</p>
+                <div className="flex gap-2">
+                    <code className="block flex-1 rounded bg-muted p-2 text-sm font-mono break-all">
+                        {token}
+                    </code>
+                    <Button variant="outline" size="sm" onClick={handleCopyToClipboard}>Copy</Button>
+                </div>
+                <p className="text-xs text-muted-foreground">The endpoint agent will use this token to securely register itself with your tenant.</p>
+              </div>
+            )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={handleClose}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
