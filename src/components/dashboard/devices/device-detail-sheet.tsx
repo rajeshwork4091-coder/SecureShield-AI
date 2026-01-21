@@ -14,17 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { type Device } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { AlertCircle, ShieldCheck, ShieldOff } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 
 interface DeviceDetailSheetProps {
   device: Device | null;
@@ -102,31 +91,18 @@ export function DeviceDetailSheet({ device, isOpen, onOpenChange, onIsolateDevic
           </div>
         </div>
         <SheetFooter className="gap-2 sm:justify-start">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                 <Button disabled={device.status === 'Isolated'}>
-                    <ShieldOff className="mr-2 h-4 w-4" /> Isolate Device
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will isolate {device.deviceName} from the network. This action cannot be easily undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onIsolateDevice}>Isolate</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-            <Button variant="outline" disabled>
-                <AlertCircle className="mr-2 h-4 w-4" /> View Alerts
-            </Button>
-            <Button variant="outline" disabled>
-                <ShieldCheck className="mr-2 h-4 w-4" /> Change Policy
-            </Button>
+          <Button
+            onClick={onIsolateDevice}
+            disabled={device.status === 'Isolated'}
+          >
+            <ShieldOff className="mr-2 h-4 w-4" /> Isolate Device
+          </Button>
+          <Button variant="outline" disabled>
+              <AlertCircle className="mr-2 h-4 w-4" /> View Alerts
+          </Button>
+          <Button variant="outline" disabled>
+              <ShieldCheck className="mr-2 h-4 w-4" /> Change Policy
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

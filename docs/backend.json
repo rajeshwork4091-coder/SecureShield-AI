@@ -60,7 +60,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Online", "Offline", "Isolated"]
+          "enum": ["Online", "Offline", "Isolated", "Decommissioned"]
         },
         "policy": {
           "type": "string",
@@ -80,6 +80,21 @@
         "isolated": {
           "type": "boolean",
           "description": "Whether the device is isolated from the network."
+        },
+        "isolatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the device was isolated."
+        },
+        "policyUpdatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the policy was last updated."
+        },
+        "decommissionedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the device was decommissioned."
         }
       },
       "required": [

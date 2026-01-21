@@ -26,7 +26,7 @@ import { Input } from '@/components/ui/input';
 import { type Device } from '@/lib/data';
 import { DeviceDetailSheet } from './device-detail-sheet';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
-import { doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { doc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -38,7 +38,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
 interface DataTableProps<TData, TValue> {
@@ -54,24 +53,27 @@ export function DataTable<TData extends Device, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [rowSelection, setRowSelection] = useState({})
+  const [rowSelection, setRowSelection] = useState({});
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
+
+  const [isIsolateDialogOpen, setIsolateDialogOpen] = useState(false);
+  const [devicesToIsolate, setDevicesToIsolate] = useState<string[]>([]);
 
   const firestore = useFirestore();
   const { toast } = useToast();
-
 
   const handleIsolateDevices = async (deviceIds: string[]) => {
     if (!firestore || !tenantId || deviceIds.length === 0) return;
 
     try {
       const batch = writeBatch(firestore);
-      deviceIds.forEach(id => {
+      deviceIds.forEach((id) => {
         const deviceRef = doc(firestore, 'tenants', tenantId, 'devices', id);
         batch.update(deviceRef, {
           isolated: true,
           status: 'Isolated',
           riskLevel: 'High',
+          isolatedAt: serverTimestamp(),
         });
       });
       await batch.commit();
@@ -80,15 +82,18 @@ export function DataTable<TData extends Device, TValue>({
         title: 'Device(s) Isolated',
         description: `${deviceIds.length} device(s) have been isolated from the network.`,
       });
+      table.clearRowSelection();
     } catch (error: any) {
-        toast({
-            variant: "destructive",
-            title: "Uh oh! Something went wrong.",
-            description: error.message || 'Could not isolate the device(s).',
-        })
+      toast({
+        variant: 'destructive',
+        title: 'Uh oh! Something went wrong.',
+        description: error.message || 'Could not isolate the device(s).',
+      });
+    } finally {
+      setIsolateDialogOpen(false);
+      setDevicesToIsolate([]);
     }
-  }
-
+  };
 
   const table = useReactTable({
     data,
@@ -108,18 +113,20 @@ export function DataTable<TData extends Device, TValue>({
     meta: {
       setSelectedDevice: (device: Device) => setSelectedDevice(device),
       isolateDevices: (deviceIds: string[]) => {
-        const selectedDevice = data.find(d => deviceIds.includes(d.id));
-        if (selectedDevice?.status === 'Isolated') return;
-        
-        // This is a simple confirmation, for a real app, use a custom modal
-        if (window.confirm(`Are you sure you want to isolate ${deviceIds.length} device(s)? This action cannot be undone from the UI.`)) {
-          handleIsolateDevices(deviceIds);
+        const devicesToUpdate = data.filter(
+          (d) => deviceIds.includes(d.id) && d.status !== 'Isolated'
+        );
+        if (devicesToUpdate.length > 0) {
+          setDevicesToIsolate(devicesToUpdate.map((d) => d.id));
+          setIsolateDialogOpen(true);
         }
       },
     },
   });
 
-  const selectedDeviceIds = table.getFilteredSelectedRowModel().rows.map(row => row.original.id);
+  const selectedDeviceIds = table
+    .getFilteredSelectedRowModel()
+    .rows.map((row) => row.original.id);
 
   return (
     <>
@@ -132,53 +139,68 @@ export function DataTable<TData extends Device, TValue>({
           }
         }}
         onIsolateDevice={() => {
-            if (selectedDevice) {
-                table.options.meta?.isolateDevices([selectedDevice.id]);
-            }
+          if (selectedDevice) {
+            table.options.meta?.isolateDevices([selectedDevice.id]);
+          }
         }}
       />
+      <AlertDialog open={isIsolateDialogOpen} onOpenChange={setIsolateDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will isolate {devicesToIsolate.length} device(s) from the
+              network. This action cannot be easily undone from this UI.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setDevicesToIsolate([]);
+                setIsolateDialogOpen(false);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleIsolateDevices(devicesToIsolate)}
+            >
+              Isolate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Input
               placeholder="Filter by device name..."
-              value={(table.getColumn('deviceName')?.getFilterValue() as string) ?? ''}
+              value={
+                (table.getColumn('deviceName')?.getFilterValue() as string) ?? ''
+              }
               onChange={(event) =>
                 table.getColumn('deviceName')?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
           </div>
-            {table.getFilteredSelectedRowModel().rows.length > 0 && (
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" disabled>
-                        <ShieldCheck /> Apply Policy to Selected
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm">
-                            <ShieldOff /> Isolate Selected
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will isolate {selectedDeviceIds.length} device(s) from the network. This action
-                            cannot be easily undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleIsolateDevices(selectedDeviceIds)}>
-                            Isolate
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-
-                </div>
-            )}
+          {table.getFilteredSelectedRowModel().rows.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled>
+                <ShieldCheck /> Apply Policy to Selected
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() =>
+                  table.options.meta?.isolateDevices(selectedDeviceIds)
+                }
+              >
+                <ShieldOff /> Isolate Selected
+              </Button>
+            </div>
+          )}
         </div>
         <div className="rounded-md border">
           <Table>

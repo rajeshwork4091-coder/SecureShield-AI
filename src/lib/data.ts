@@ -4,11 +4,12 @@ export type Device = {
   ipAddress: string;
   status: 'Online' | 'Offline' | 'Isolated';
   policy: 'Strict' | 'Balanced' | 'Lenient';
-  lastSeen: string;
+  lastSeen: any;
   riskLevel: 'High' | 'Medium' | 'Low';
   os: 'Windows' | 'macOS' | 'Linux' | 'Tablet' | 'VM' | 'Other';
-  createdAt?: string;
+  createdAt?: any;
   isolated?: boolean;
+  isolatedAt?: any;
   // Kept for static data compatibility on other pages
   alertsCount?: number; 
   lastScan?: string;
