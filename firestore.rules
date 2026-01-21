@@ -42,5 +42,23 @@ service cloud.firestore {
       // A tenant document cannot be deleted from the client
       allow delete: if false;
     }
+
+    // Devices collection (per tenant)
+    match /tenants/{tenantId}/devices/{deviceId} {
+      // Allow read if user belongs to the tenant
+      allow read: if isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
+
+      // Allow create if user belongs to tenant
+      allow create: if isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
+
+      // Allow update if user belongs to tenant
+      allow update: if isSignedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.tenantId == tenantId;
+
+      // Prevent delete from client
+      allow delete: if false;
+    }
   }
 }

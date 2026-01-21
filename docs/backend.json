@@ -40,6 +40,52 @@
         }
       },
       "required": ["name", "ownerId"]
+    },
+    "Device": {
+      "title": "Device",
+      "description": "Represents a managed endpoint device.",
+      "type": "object",
+      "properties": {
+        "deviceName": {
+          "type": "string",
+          "description": "The name of the device."
+        },
+        "os": {
+          "type": "string",
+          "description": "Operating system of the device."
+        },
+        "riskLevel": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Online", "Offline"]
+        },
+        "policy": {
+          "type": "string",
+          "enum": ["Strict", "Balanced", "Lenient"]
+        },
+        "ipAddress": {
+          "type": "string"
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "deviceName",
+        "os",
+        "riskLevel",
+        "status",
+        "policy",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -57,6 +103,12 @@
         "$ref": "#/entities/Tenant"
       },
       "description": "Stores information about a tenant organization."
+    },
+    "/tenants/{tenantId}/devices/{deviceId}": {
+      "schema": {
+        "$ref": "#/entities/Device"
+      },
+      "description": "Stores devices belonging to a specific tenant."
     }
   }
 }

@@ -34,7 +34,7 @@ export function DeviceDetailSheet({ device, isOpen, onOpenChange }: DeviceDetail
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle className="font-headline text-2xl">{device.name}</SheetTitle>
+          <SheetTitle className="font-headline text-2xl">{device.deviceName}</SheetTitle>
           <SheetDescription>
             {device.os} &middot; {device.ipAddress}
           </SheetDescription>
@@ -59,19 +59,15 @@ export function DeviceDetailSheet({ device, isOpen, onOpenChange }: DeviceDetail
               <p>{device.policy}</p>
             </div>
              <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Recent Alerts</p>
-              <p>{device.alertsCount}</p>
+              <p className="text-sm font-medium text-muted-foreground">Last Seen</p>
+              <p>{device.lastSeen.substring(0, 19).replace('T', ' ')}</p>
             </div>
           </div>
           <Separator />
            <div className="grid grid-cols-2 gap-4">
              <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Last Seen</p>
-              <p>{device.lastSeen.substring(0, 19).replace('T', ' ')}</p>
-            </div>
-             <div className="space-y-1">
-              <p className="text-sm font-medium text-muted-foreground">Last Scan</p>
-              <p>{device.lastScan.substring(0, 19).replace('T', ' ')}</p>
+              <p className="text-sm font-medium text-muted-foreground">Created At</p>
+              <p>{device.createdAt ? device.createdAt.substring(0, 19).replace('T', ' ') : 'N/A'}</p>
             </div>
           </div>
         </div>

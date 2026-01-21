@@ -1,24 +1,26 @@
 export type Device = {
   id: string;
-  name: string;
+  deviceName: string;
   ipAddress: string;
   status: 'Online' | 'Offline';
   policy: 'Strict' | 'Balanced' | 'Lenient';
   lastSeen: string;
   riskLevel: 'High' | 'Medium' | 'Low';
   os: 'Windows' | 'macOS' | 'Linux' | 'Tablet' | 'VM';
-  lastScan: string;
-  alertsCount: number;
+  createdAt?: string;
+  // Kept for static data compatibility on other pages
+  alertsCount?: number; 
+  lastScan?: string;
 };
 
 export const devices: Device[] = [
-  { id: 'DEV001', name: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:34:56Z', riskLevel: 'High', os: 'Windows', lastScan: '2026-01-18T10:34:56Z', alertsCount: 3 },
-  { id: 'DEV002', name: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:20:00Z', riskLevel: 'Medium', os: 'Windows', lastScan: '2026-01-18T06:20:00Z', alertsCount: 1 },
-  { id: 'DEV003', name: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-16T09:00:00Z', riskLevel: 'Low', os: 'VM', lastScan: '2026-01-15T09:00:00Z', alertsCount: 0 },
-  { id: 'DEV004', name: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:30:00Z', riskLevel: 'Medium', os: 'macOS', lastScan: '2026-01-18T11:30:00Z', alertsCount: 0 },
-  { id: 'DEV005', name: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:00:00Z', riskLevel: 'High', os: 'Linux', lastScan: '2026-01-18T04:00:00Z', alertsCount: 5 },
-  { id: 'DEV006', name: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-13T14:00:00Z', riskLevel: 'Low', os: 'Tablet', lastScan: '2026-01-12T14:00:00Z', alertsCount: 0 },
-  { id: 'DEV007', name: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:45:00Z', riskLevel: 'Low', os: 'Windows', lastScan: '2026-01-18T07:45:00Z', alertsCount: 0 },
+  { id: 'DEV001', deviceName: 'finance-laptop-01', ipAddress: '192.168.1.10', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:34:56Z', riskLevel: 'High', os: 'Windows', lastScan: '2026-01-18T10:34:56Z', alertsCount: 3 },
+  { id: 'DEV002', deviceName: 'hr-desktop-05', ipAddress: '192.168.1.15', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:20:00Z', riskLevel: 'Medium', os: 'Windows', lastScan: '2026-01-18T06:20:00Z', alertsCount: 1 },
+  { id: 'DEV003', deviceName: 'marketing-vm-02', ipAddress: '192.168.2.22', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-16T09:00:00Z', riskLevel: 'Low', os: 'VM', lastScan: '2026-01-15T09:00:00Z', alertsCount: 0 },
+  { id: 'DEV004', deviceName: 'ceo-macbook-pro', ipAddress: '192.168.1.5', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:30:00Z', riskLevel: 'Medium', os: 'macOS', lastScan: '2026-01-18T11:30:00Z', alertsCount: 0 },
+  { id: 'DEV005', deviceName: 'dev-server-01', ipAddress: '10.0.0.50', status: 'Online', policy: 'Strict', lastSeen: '2026-01-18T12:00:00Z', riskLevel: 'High', os: 'Linux', lastScan: '2026-01-18T04:00:00Z', alertsCount: 5 },
+  { id: 'DEV006', deviceName: 'sales-tablet-08', ipAddress: '192.168.3.12', status: 'Offline', policy: 'Lenient', lastSeen: '2026-01-13T14:00:00Z', riskLevel: 'Low', os: 'Tablet', lastScan: '2026-01-12T14:00:00Z', alertsCount: 0 },
+  { id: 'DEV007', deviceName: 'support-pc-11', ipAddress: '192.168.1.30', status: 'Online', policy: 'Balanced', lastSeen: '2026-01-18T11:45:00Z', riskLevel: 'Low', os: 'Windows', lastScan: '2026-01-18T07:45:00Z', alertsCount: 0 },
 ];
 
 export type Threat = {

@@ -72,14 +72,14 @@ export const columns: ColumnDef<Device>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'name',
+    accessorKey: 'deviceName',
     header: 'Device Name',
     cell: ({ row, table }) => (
         <div 
             className="font-medium hover:underline cursor-pointer"
             onClick={() => table.options.meta?.setSelectedDevice(row.original)}
         >
-            {row.original.name}
+            {row.original.deviceName}
         </div>
     )
   },
@@ -166,6 +166,7 @@ export const columns: ColumnDef<Device>[] = [
     header: 'Last Seen',
     cell: ({ row }) => {
       const dateString = row.getValue('lastSeen') as string;
+      if (!dateString) return '';
       return dateString.substring(0, 19).replace('T', ' ');
     },
   },

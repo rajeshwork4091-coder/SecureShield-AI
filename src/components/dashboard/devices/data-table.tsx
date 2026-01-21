@@ -78,9 +78,9 @@ export function DataTable<TData, TValue>({
           <div className="flex items-center gap-2">
             <Input
               placeholder="Filter by device name..."
-              value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+              value={(table.getColumn('deviceName')?.getFilterValue() as string) ?? ''}
               onChange={(event) =>
-                table.getColumn('name')?.setFilterValue(event.target.value)
+                table.getColumn('deviceName')?.setFilterValue(event.target.value)
               }
               className="max-w-sm"
             />
@@ -139,7 +139,7 @@ export function DataTable<TData, TValue>({
                     colSpan={columns.length}
                     className="h-24 text-center"
                   >
-                    No results.
+                    No devices found.
                   </TableCell>
                 </TableRow>
               )}
