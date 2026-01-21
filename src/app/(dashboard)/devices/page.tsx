@@ -9,24 +9,25 @@ import { DataTable } from '@/components/dashboard/devices/data-table';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { EnrollDeviceDialog } from '@/components/dashboard/devices/enroll-device-dialog';
 
 export default function DevicesPage() {
   const { user, loading: userLoading } = useUser();
   const firestore = useFirestore();
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isEnrollDialogOpen, setEnrollDialogOpen] = useState(false);
 
   useEffect(() => {
     if (userLoading || !firestore) {
-        // Wait for user and firestore to be available
         return;
     }
 
     if (!user) {
-        setLoading(false); // Not logged in, stop loading
+        setLoading(false);
         return;
     }
-
 
     let unsubscribe: (() => void) | undefined;
 
@@ -36,9 +37,10 @@ export default function DevicesPage() {
         const userDocSnap = await getDoc(userDocRef);
 
         if (userDocSnap.exists()) {
-          const tenantId = userDocSnap.data().tenantId;
-          if (tenantId) {
-            const devicesQuery = query(collection(firestore, 'tenants', tenantId, 'devices'));
+          const userTenantId = userDocSnap.data().tenantId;
+          setTenantId(userTenantId);
+          if (userTenantId) {
+            const devicesQuery = query(collection(firestore, 'tenants', userTenantId, 'devices'));
             unsubscribe = onSnapshot(devicesQuery, (querySnapshot) => {
               const devicesData = querySnapshot.docs.map((doc) => ({
                 id: doc.id,
@@ -72,28 +74,35 @@ export default function DevicesPage() {
   }, [user, firestore, userLoading]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-headline text-3xl font-semibold">Device Management</h1>
-          <p className="text-muted-foreground">View, manage, and protect your endpoint devices.</p>
-          <p className="pt-2 text-sm text-muted-foreground">Devices are enrolled using a lightweight endpoint agent.</p>
+    <>
+      <EnrollDeviceDialog
+        isOpen={isEnrollDialogOpen}
+        onOpenChange={setEnrollDialogOpen}
+        tenantId={tenantId}
+      />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-headline text-3xl font-semibold">Device Management</h1>
+            <p className="text-muted-foreground">View, manage, and protect your endpoint devices.</p>
+            <p className="pt-2 text-sm text-muted-foreground">Devices are enrolled using a lightweight endpoint agent.</p>
+          </div>
+          <Button onClick={() => setEnrollDialogOpen(true)}>
+            <PlusCircle />
+            Enroll New Device
+          </Button>
         </div>
-        <Button disabled>
-          <PlusCircle />
-          Enroll New Device
-        </Button>
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+        ) : (
+          <DataTable columns={columns} data={devices} tenantId={tenantId} />
+        )}
       </div>
-      {loading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : (
-        <DataTable columns={columns} data={devices} />
-      )}
-    </div>
+    </>
   );
 }

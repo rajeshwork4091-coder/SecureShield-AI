@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     setSelectedDevice: (device: Device) => void;
+    isolateDevices: (deviceIds: string[]) => void;
   }
 }
 
@@ -42,7 +43,7 @@ const riskVariantMap = {
   Low: 'outline',
 } as const;
 
-const osIconMap: Record<Device['os'], React.ReactNode> = {
+const osIconMap: Record<string, React.ReactNode> = {
   Windows: <Laptop className="h-4 w-4 text-muted-foreground" />,
   macOS: <Apple className="h-4 w-4 text-muted-foreground" />,
   Linux: <Server className="h-4 w-4 text-muted-foreground" />,
@@ -90,7 +91,7 @@ export const columns: ColumnDef<Device>[] = [
         const os = row.original.os;
         return (
             <div className="flex items-center gap-2">
-                {osIconMap[os]}
+                {osIconMap[os] || <Laptop className="h-4 w-4 text-muted-foreground" />}
                 <span>{os}</span>
             </div>
         )
@@ -117,8 +118,19 @@ export const columns: ColumnDef<Device>[] = [
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
-      const status = row.getValue('status') as string;
+      const status = row.original.status;
       const isOffline = status === 'Offline';
+      const isIsolated = status === 'Isolated';
+
+      if (isIsolated) {
+        return (
+          <div className="flex items-center text-destructive font-medium">
+            <ShieldOff className="mr-2 h-4 w-4" />
+            {status}
+          </div>
+        )
+      }
+
       const statusCell = (
         <div className="flex items-center">
             <Power className={cn('mr-2 h-4 w-4', status === 'Online' ? 'text-green-500' : 'text-muted-foreground')} />
@@ -165,9 +177,15 @@ export const columns: ColumnDef<Device>[] = [
     accessorKey: 'lastSeen',
     header: 'Last Seen',
     cell: ({ row }) => {
-      const dateString = row.getValue('lastSeen') as string;
-      if (!dateString) return '';
-      return dateString.substring(0, 19).replace('T', ' ');
+      const date = (row.getValue('lastSeen') as any)?.toDate?.();
+      if (!date) return 'N/A';
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
     },
   },
   {
@@ -184,10 +202,13 @@ export const columns: ColumnDef<Device>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={() => table.options.meta?.setSelectedDevice(device)}>
                 <Eye /> View Details
             </DropdownMenuItem>
-             <DropdownMenuItem disabled>
+             <DropdownMenuItem
+                onClick={() => table.options.meta?.isolateDevices([device.id])}
+                disabled={device.status === 'Isolated'}
+             >
                 <ShieldOff /> Isolate Device
             </DropdownMenuItem>
             <DropdownMenuSeparator />

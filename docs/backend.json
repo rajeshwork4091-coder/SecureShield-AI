@@ -60,7 +60,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Online", "Offline"]
+          "enum": ["Online", "Offline", "Isolated"]
         },
         "policy": {
           "type": "string",
@@ -76,6 +76,10 @@
         "createdAt": {
           "type": "string",
           "format": "date-time"
+        },
+        "isolated": {
+          "type": "boolean",
+          "description": "Whether the device is isolated from the network."
         }
       },
       "required": [
@@ -84,8 +88,38 @@
         "riskLevel",
         "status",
         "policy",
-        "createdAt"
+        "createdAt",
+        "isolated"
       ]
+    },
+    "ThreatAlert": {
+      "title": "Threat Alert",
+      "description": "Represents a security alert for a specific device.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Resolved", "Quarantined"]
+        },
+        "detectedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "engine": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "severity", "status", "detectedAt"]
     }
   },
   "auth": {
@@ -109,6 +143,12 @@
         "$ref": "#/entities/Device"
       },
       "description": "Stores devices belonging to a specific tenant."
+    },
+    "/tenants/{tenantId}/devices/{deviceId}/alerts/{alertId}": {
+      "schema": {
+        "$ref": "#/entities/ThreatAlert"
+      },
+      "description": "Stores security alerts for a specific device within a tenant."
     }
   }
 }
