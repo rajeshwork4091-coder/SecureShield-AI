@@ -135,6 +135,35 @@
         }
       },
       "required": ["type", "severity", "status", "detectedAt"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Records an auditable action performed by a user.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "The type of action performed (e.g., 'DEVICE_ISOLATED')."
+        },
+        "targetId": {
+          "type": "string",
+          "description": "The ID of the entity that was acted upon (e.g., a deviceId)."
+        },
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who performed the action."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the action occurred."
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Any extra metadata associated with the action."
+        }
+      },
+      "required": ["action", "targetId", "userId", "createdAt"]
     }
   },
   "auth": {
@@ -164,6 +193,12 @@
         "$ref": "#/entities/ThreatAlert"
       },
       "description": "Stores security alerts for a specific device within a tenant."
+    },
+    "/tenants/{tenantId}/auditLogs/{logId}": {
+      "schema": {
+        "$ref": "#/entities/AuditLog"
+      },
+      "description": "Stores audit log entries for a specific tenant."
     }
   }
 }

@@ -22,6 +22,7 @@ declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
     setSelectedDevice: (device: Device) => void;
     isolateDevices: (deviceIds: string[]) => void;
+    openChangePolicyModal: (device: Device) => void;
   }
 }
 
@@ -212,7 +213,7 @@ export const columns: ColumnDef<Device>[] = [
                 <ShieldOff /> Isolate Device
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={() => table.options.meta?.openChangePolicyModal(device)}>
               <Shield /> Change Policy
             </DropdownMenuItem>
             <DropdownMenuItem className="text-destructive" disabled>

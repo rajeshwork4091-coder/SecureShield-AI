@@ -26,8 +26,7 @@ import { Input } from '@/components/ui/input';
 import { type Device } from '@/lib/data';
 import { DeviceDetailSheet } from './device-detail-sheet';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
-import { doc, serverTimestamp, writeBatch } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertDialog,
@@ -39,6 +38,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { ChangePolicyModal } from './change-policy-modal';
+import { isolateDevices, changeDevicePolicy, type Policy } from '@/lib/firebase/firestore';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,44 +55,69 @@ export function DataTable<TData extends Device, TValue>({
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [rowSelection, setRowSelection] = useState({});
+
+  // Component State
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Device Detail Sheet State
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null);
 
+  // Isolation Dialog State
   const [isIsolateDialogOpen, setIsolateDialogOpen] = useState(false);
   const [devicesToIsolate, setDevicesToIsolate] = useState<string[]>([]);
 
-  const firestore = useFirestore();
-  const { toast } = useToast();
+  // Change Policy Modal State
+  const [isPolicyModalOpen, setPolicyModalOpen] = useState(false);
+  const [deviceToUpdate, setDeviceToUpdate] = useState<Device | null>(null);
 
-  const handleIsolateDevices = async (deviceIds: string[]) => {
-    if (!firestore || !tenantId || deviceIds.length === 0) return;
 
+  const handleIsolate = async () => {
+    if (!firestore || !tenantId || !user || devicesToIsolate.length === 0) return;
+
+    setIsUpdating(true);
     try {
-      const batch = writeBatch(firestore);
-      deviceIds.forEach((id) => {
-        const deviceRef = doc(firestore, 'tenants', tenantId, 'devices', id);
-        batch.update(deviceRef, {
-          isolated: true,
-          status: 'Isolated',
-          riskLevel: 'High',
-          isolatedAt: serverTimestamp(),
-        });
-      });
-      await batch.commit();
-
+      await isolateDevices(firestore, tenantId, devicesToIsolate, user.uid);
       toast({
         title: 'Device(s) Isolated',
-        description: `${deviceIds.length} device(s) have been isolated from the network.`,
+        description: `${devicesToIsolate.length} device(s) have been put into isolation.`,
       });
       table.clearRowSelection();
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not isolate the device(s).',
+        title: 'Isolation Failed',
+        description: error.message || 'Could not isolate the device(s). Check permissions.',
       });
     } finally {
+      setIsUpdating(false);
       setIsolateDialogOpen(false);
       setDevicesToIsolate([]);
+    }
+  };
+  
+  const handleChangePolicy = async (policy: Policy) => {
+    if (!firestore || !tenantId || !user || !deviceToUpdate) return;
+    
+    setIsUpdating(true);
+    try {
+      await changeDevicePolicy(firestore, tenantId, deviceToUpdate.id, policy, user.uid);
+      toast({
+        title: 'Policy Updated',
+        description: `Policy for ${deviceToUpdate.deviceName} changed to ${policy}.`,
+      });
+    } catch (error: any) {
+       toast({
+        variant: 'destructive',
+        title: 'Policy Update Failed',
+        description: error.message || 'Could not change the policy. Check permissions.',
+      });
+    } finally {
+      setIsUpdating(false);
+      setPolicyModalOpen(false);
+      setDeviceToUpdate(null);
     }
   };
 
@@ -121,6 +147,10 @@ export function DataTable<TData extends Device, TValue>({
           setIsolateDialogOpen(true);
         }
       },
+      openChangePolicyModal: (device: Device) => {
+        setDeviceToUpdate(device);
+        setPolicyModalOpen(true);
+      }
     },
   });
 
@@ -143,6 +173,11 @@ export function DataTable<TData extends Device, TValue>({
             table.options.meta?.isolateDevices([selectedDevice.id]);
           }
         }}
+        onChangePolicy={() => {
+            if (selectedDevice) {
+                table.options.meta?.openChangePolicyModal(selectedDevice);
+            }
+        }}
       />
       <AlertDialog open={isIsolateDialogOpen} onOpenChange={setIsolateDialogOpen}>
         <AlertDialogContent>
@@ -163,13 +198,21 @@ export function DataTable<TData extends Device, TValue>({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleIsolateDevices(devicesToIsolate)}
+              onClick={handleIsolate}
+              disabled={isUpdating}
             >
-              Isolate
+              {isUpdating ? 'Isolating...' : 'Isolate'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ChangePolicyModal 
+        isOpen={isPolicyModalOpen}
+        onOpenChange={setPolicyModalOpen}
+        onSelectPolicy={handleChangePolicy}
+        isUpdating={isUpdating}
+      />
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">

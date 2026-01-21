@@ -2,7 +2,7 @@ export type Device = {
   id: string;
   deviceName: string;
   ipAddress: string;
-  status: 'Online' | 'Offline' | 'Isolated';
+  status: 'Online' | 'Offline' | 'Isolated' | 'Decommissioned';
   policy: 'Strict' | 'Balanced' | 'Lenient';
   lastSeen: any;
   riskLevel: 'High' | 'Medium' | 'Low';
@@ -10,6 +10,8 @@ export type Device = {
   createdAt?: any;
   isolated?: boolean;
   isolatedAt?: any;
+  policyUpdatedAt?: any;
+  decommissionedAt?: any;
   // Kept for static data compatibility on other pages
   alertsCount?: number; 
   lastScan?: string;

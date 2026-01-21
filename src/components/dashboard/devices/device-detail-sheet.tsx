@@ -20,6 +20,7 @@ interface DeviceDetailSheetProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   onIsolateDevice: () => void;
+  onChangePolicy: () => void;
 }
 
 const riskVariantMap = {
@@ -28,7 +29,7 @@ const riskVariantMap = {
   Low: 'outline',
 } as const;
 
-export function DeviceDetailSheet({ device, isOpen, onOpenChange, onIsolateDevice }: DeviceDetailSheetProps) {
+export function DeviceDetailSheet({ device, isOpen, onOpenChange, onIsolateDevice, onChangePolicy }: DeviceDetailSheetProps) {
   if (!device) return null;
 
   const lastSeenDate = (device.lastSeen as any)?.toDate?.();
@@ -100,7 +101,7 @@ export function DeviceDetailSheet({ device, isOpen, onOpenChange, onIsolateDevic
           <Button variant="outline" disabled>
               <AlertCircle className="mr-2 h-4 w-4" /> View Alerts
           </Button>
-          <Button variant="outline" disabled>
+          <Button variant="outline" onClick={onChangePolicy}>
               <ShieldCheck className="mr-2 h-4 w-4" /> Change Policy
           </Button>
         </SheetFooter>
