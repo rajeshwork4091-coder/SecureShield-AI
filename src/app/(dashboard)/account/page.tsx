@@ -1,10 +1,63 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface UserProfile {
+  companyName: string;
+  email: string;
+}
 
 export default function AccountPage() {
+  const { user, loading: userLoading } = useUser();
+  const firestore = useFirestore();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  useEffect(() => {
+    if (user && firestore) {
+      const fetchProfile = async () => {
+        setProfileLoading(true);
+        const docRef = doc(firestore, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfile(docSnap.data() as UserProfile);
+        } else {
+          console.log('No such document!');
+        }
+        setProfileLoading(false);
+      };
+      fetchProfile();
+    } else if (!userLoading) {
+      setProfileLoading(false);
+    }
+  }, [user, firestore, userLoading]);
+
+  const isLoading = userLoading || profileLoading;
+
+  const formatLastLogin = (dateString: string | undefined) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (e) {
+      return 'N/A';
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       <div>
@@ -19,22 +72,47 @@ export default function AccountPage() {
             <CardDescription>Update your personal information.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" defaultValue="John Doe" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="john.doe@example.com" disabled />
-            </div>
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <p className="text-sm text-muted-foreground">Administrator</p>
-            </div>
-            <div className="space-y-2">
-              <Label>Last login</Label>
-              <p className="text-sm text-muted-foreground">18 Jan 2026, 16:32 (Web)</p>
-            </div>
+            {isLoading ? (
+              <>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-5 w-32" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-5 w-48" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Company Name</Label>
+                  <Input id="name" value={profile?.companyName || ''} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={user?.email || ''} disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label>Role</Label>
+                  <p className="text-sm text-muted-foreground">Administrator</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Last login</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {formatLastLogin(user?.metadata.lastSignInTime)}
+                  </p>
+                </div>
+              </>
+            )}
             <Button disabled>Save Changes</Button>
           </CardContent>
         </Card>
