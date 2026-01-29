@@ -134,8 +134,13 @@
         "detectionMethod": {
           "type": "string"
         },
-        "device": {
-          "type": "string"
+        "deviceId": {
+          "type": "string",
+          "description": "The ID of the affected device."
+        },
+        "deviceName": {
+          "type": "string",
+          "description": "The name of the affected device."
         },
         "riskScore": {
           "type": "number"
@@ -167,7 +172,7 @@
           "type": "string"
         }
       },
-      "required": ["type", "severity", "status", "timestamp", "device", "detectionMethod"]
+      "required": ["type", "severity", "status", "timestamp", "deviceId", "deviceName", "detectionMethod"]
     },
     "AuditLog": {
       "title": "Audit Log",

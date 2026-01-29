@@ -32,7 +32,8 @@ export type Threat = {
   id: string;
   type: string;
   severity: 'High' | 'Medium' | 'Low';
-  device: string;
+  deviceId: string;
+  deviceName: string;
   timestamp: any; // Can be a Firestore Timestamp or an ISO string
   status: 'Active' | 'Resolved' | 'Quarantined';
   detectionMethod: string;
@@ -50,10 +51,10 @@ export type Threat = {
 };
 
 export const threats: Threat[] = [
-  { id: 'TH001', type: 'Malware Detected', severity: 'High', device: 'finance-laptop-01', timestamp: '2026-01-18T11:34:56Z', status: 'Active', detectionMethod: 'Signature Matching', riskScore: 95, details: { file: 'C:\\Users\\Finance\\Downloads\\invoice.exe', process: 'invoice.exe' }, rawTelemetry: '{"event":"file_create","path":"C:\\\\Users\\\\Finance\\\\Downloads\\\\invoice.exe","hash":"a1b2c3d4...","signature":"Win.Trojan.Generic/A"}' },
-  { id: 'TH002', type: 'Phishing Attempt', severity: 'Medium', device: 'hr-desktop-05', timestamp: '2026-01-17T12:34:56Z', status: 'Resolved', detectionMethod: 'Behavioral Analysis', riskScore: 65, details: { file: 'N/A', process: 'chrome.exe' }, rawTelemetry: '{"event":"network_outbound","process":"chrome.exe","destination":"phishingsite.com","port":443}' },
-  { id: 'TH003', type: 'Unusual Network Traffic', severity: 'Low', device: 'dev-server-01', timestamp: '2026-01-16T12:34:56Z', status: 'Active', detectionMethod: 'Anomaly Detection', riskScore: 40, details: { file: 'N/A', process: 'sshd' }, rawTelemetry: '{"event":"network_anomaly","bytes_out":50000000,"protocol":"ssh","destination":"123.45.67.89"}' },
-  { id: 'TH004', type: 'Ransomware Behavior', severity: 'High', device: 'marketing-vm-02', timestamp: '2026-01-15T12:34:56Z', status: 'Quarantined', detectionMethod: 'Behavioral Analysis', riskScore: 98, details: { file: 'D:\\Marketing\\Assets\\project.docx.locked', process: 'crypt.exe' }, rawTelemetry: '{"event":"mass_file_rename","pattern":"*.locked","count":582,"process":"crypt.exe"}' },
+  { id: 'TH001', type: 'Malware Detected', severity: 'High', deviceId: 'DEV001', deviceName: 'finance-laptop-01', timestamp: '2026-01-18T11:34:56Z', status: 'Active', detectionMethod: 'Signature Matching', riskScore: 95, details: { file: 'C:\\Users\\Finance\\Downloads\\invoice.exe', process: 'invoice.exe' }, rawTelemetry: '{"event":"file_create","path":"C:\\\\Users\\\\Finance\\\\Downloads\\\\invoice.exe","hash":"a1b2c3d4...","signature":"Win.Trojan.Generic/A"}' },
+  { id: 'TH002', type: 'Phishing Attempt', severity: 'Medium', deviceId: 'DEV002', deviceName: 'hr-desktop-05', timestamp: '2026-01-17T12:34:56Z', status: 'Resolved', detectionMethod: 'Behavioral Analysis', riskScore: 65, details: { file: 'N/A', process: 'chrome.exe' }, rawTelemetry: '{"event":"network_outbound","process":"chrome.exe","destination":"phishingsite.com","port":443}' },
+  { id: 'TH003', type: 'Unusual Network Traffic', severity: 'Low', deviceId: 'DEV005', deviceName: 'dev-server-01', timestamp: '2026-01-16T12:34:56Z', status: 'Active', detectionMethod: 'Anomaly Detection', riskScore: 40, details: { file: 'N/A', process: 'sshd' }, rawTelemetry: '{"event":"network_anomaly","bytes_out":50000000,"protocol":"ssh","destination":"123.45.67.89"}' },
+  { id: 'TH004', type: 'Ransomware Behavior', severity: 'High', deviceId: 'DEV003', deviceName: 'marketing-vm-02', timestamp: '2026-01-15T12:34:56Z', status: 'Quarantined', detectionMethod: 'Behavioral Analysis', riskScore: 98, details: { file: 'D:\\Marketing\\Assets\\project.docx.locked', process: 'crypt.exe' }, rawTelemetry: '{"event":"mass_file_rename","pattern":"*.locked","count":582,"process":"crypt.exe"}' },
 ];
 
 export type SecurityPolicy = {

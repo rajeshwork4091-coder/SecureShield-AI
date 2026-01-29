@@ -46,7 +46,6 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   const firestore = useFirestore();
   const { toast } = useToast();
   const [updatingAlerts, setUpdatingAlerts] = useState<Record<string, boolean>>({});
-
   const safeDevices = devices ?? [];
 
   const handleAction = async (alertId: string, action: () => Promise<any>) => {
@@ -65,11 +64,10 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   };
   
   const handleIsolate = (alert: Threat) => {
-    const device = safeDevices.find(d => d.deviceName === alert.device);
-    if (!firestore || !tenantId || !userId || !device) return;
+    if (!firestore || !tenantId || !userId || !alert.deviceId) return;
     handleAction(alert.id, async () => {
-      await isolateDeviceFromThreat(firestore, tenantId, device.id, alert.id, userId);
-      toast({ title: 'Device Isolated', description: `${device.deviceName} has been isolated.` });
+      await isolateDeviceFromThreat(firestore, tenantId, alert.deviceId, alert.id, userId);
+      toast({ title: 'Device Isolated', description: `${alert.deviceName} has been isolated.` });
     });
   };
   
@@ -112,7 +110,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
       {alerts.map((alert) => {
-        const device = safeDevices.find(d => d.deviceName === alert.device);
+        const device = safeDevices.find(d => d.id === alert.deviceId);
         const devicePolicy = device?.policy || alert.policyAtDetection || 'N/A';
         const isUpdating = updatingAlerts[alert.id];
 
@@ -127,7 +125,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
               })} />
               <div className="flex-1">
                 <p className="font-semibold">{alert.type}</p>
-                <p className="text-sm text-muted-foreground">Detected on {alert.device}</p>
+                <p className="text-sm text-muted-foreground">Detected on {alert.deviceName}</p>
               </div>
               <div className="hidden items-center gap-2 text-sm text-muted-foreground md:flex">
                 {detectionMethodIconMap[alert.detectionMethod as keyof typeof detectionMethodIconMap] || <ShieldQuestion className="h-4 w-4" />}
@@ -143,7 +141,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                 <div className="grid grid-cols-2 gap-x-4 gap-y-6 text-sm md:grid-cols-4">
                     <div>
                         <p className="font-medium">Device</p>
-                        <p className="text-muted-foreground">{alert.device}</p>
+                        <p className="text-muted-foreground">{alert.deviceName}</p>
                     </div>
                      <div>
                         <p className="font-medium">Device Policy</p>
