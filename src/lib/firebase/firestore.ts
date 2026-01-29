@@ -57,6 +57,7 @@ export async function addDevice(
     isolated: false,
     lastSeen: serverTimestamp(),
     createdAt: serverTimestamp(),
+    enrolledBy: userId,
   };
 
   const docRef = await addDoc(devicesRef, newDevice);

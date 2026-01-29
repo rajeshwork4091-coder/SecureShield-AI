@@ -95,6 +95,10 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp when the device was decommissioned."
+        },
+        "enrolledBy": {
+          "type": "string",
+          "description": "The UID of the user who enrolled the device."
         }
       },
       "required": [

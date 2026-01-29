@@ -12,6 +12,7 @@ export type Device = {
   isolatedAt?: any;
   policyUpdatedAt?: any;
   decommissionedAt?: any;
+  enrolledBy?: string;
   // Kept for static data compatibility on other pages
   alertsCount?: number; 
   lastScan?: string;
