@@ -113,7 +113,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
     <Accordion type="single" collapsible className="w-full space-y-2">
       {alerts.map((alert) => {
         const device = safeDevices.find(d => d.deviceName === alert.device);
-        const devicePolicy = device?.policy || 'N/A';
+        const devicePolicy = device?.policy || alert.policyAtDetection || 'N/A';
         const isUpdating = updatingAlerts[alert.id];
 
         return (
@@ -135,7 +135,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
               <Badge variant={statusVariantMap[alert.status]}>{alert.status}</Badge>
-              <p className="hidden text-sm text-muted-foreground lg:block">{alert.timestamp.substring(0, 19).replace('T', ' ')}</p>
+              <p className="hidden text-sm text-muted-foreground lg:block">{new Date(alert.timestamp).toLocaleString()}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -155,7 +155,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                     </div>
                     <div>
                         <p className="font-medium">Timestamp</p>
-                        <p className="text-muted-foreground">{alert.timestamp.substring(0, 19).replace('T', ' ')}</p>
+                        <p className="text-muted-foreground">{new Date(alert.timestamp).toLocaleString()}</p>
                     </div>
                     <div className="col-span-2 md:col-span-4">
                         <p className="font-medium">Risk Score: {alert.riskScore}/100</p>
@@ -170,7 +170,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                     </div>
                     <div>
                         <p className="font-medium">Affected File / Process</p>
-                        <code className="text-sm text-muted-foreground">{alert.details.file !== 'N/A' ? alert.details.file : alert.details.process}</code>
+                        <code className="text-sm text-muted-foreground">{alert.details?.file && alert.details.file !== 'N/A' ? alert.details.file : alert.details?.process}</code>
                     </div>
                 </div>
 
@@ -181,7 +181,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                 onClick={() => handleExplain(alert.id)}
                 disabled={isUpdating || !!alert.aiExplanation}
               >
-                {isUpdating ? <Loader2 className="animate-spin" /> : <Bot />}
+                {isUpdating && updatingAlerts[alert.id] ? <Loader2 className="animate-spin" /> : <Bot />}
                 Explain with AI
               </Button>
               <Button 
@@ -190,7 +190,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                 onClick={() => handleIsolate(alert)}
                 disabled={isUpdating || alert.status !== 'Active' || device?.status === 'Isolated'}
               >
-                 {isUpdating ? <Loader2 className="animate-spin" /> : <Lock />}
+                 {isUpdating && updatingAlerts[alert.id] ? <Loader2 className="animate-spin" /> : <Lock />}
                 Isolate Device
               </Button>
                <Button
@@ -199,7 +199,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                 onClick={() => handleQuarantine(alert.id)}
                 disabled={isUpdating || alert.status !== 'Active'}
                >
-                {isUpdating ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
+                {isUpdating && updatingAlerts[alert.id] ? <Loader2 className="animate-spin" /> : <ShieldAlert />}
                 Quarantine Threat
               </Button>
               <Button
@@ -208,7 +208,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                 onClick={() => handleResolve(alert.id)}
                 disabled={isUpdating || alert.status === 'Resolved'}
               >
-                {isUpdating ? <Loader2 className="animate-spin" /> : <Check />}
+                {isUpdating && updatingAlerts[alert.id] ? <Loader2 className="animate-spin" /> : <Check />}
                 Mark as Resolved
               </Button>
             </div>

@@ -61,7 +61,7 @@ export default function ThreatsPage() {
         return {
           id: doc.id,
           ...data,
-          timestamp: data.timestamp?.toDate?.().toISOString() || '',
+          timestamp: data.timestamp?.toDate?.().toISOString() || new Date().toISOString(),
         } as Threat;
       });
       setAlerts(alertsData);
