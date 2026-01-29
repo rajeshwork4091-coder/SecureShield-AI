@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { useUser, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,18 +23,22 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (user && firestore) {
-      const fetchProfile = async () => {
-        setProfileLoading(true);
-        const docRef = doc(firestore, 'users', user.uid);
-        const docSnap = await getDoc(docRef);
+      setProfileLoading(true);
+      const docRef = doc(firestore, 'users', user.uid);
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
           setProfile(docSnap.data() as UserProfile);
         } else {
           console.log('No such document!');
+          setProfile(null);
         }
         setProfileLoading(false);
-      };
-      fetchProfile();
+      }, (error) => {
+        console.error("Error fetching profile:", error);
+        setProfileLoading(false);
+      });
+
+      return () => unsubscribe();
     } else if (!userLoading) {
       setProfileLoading(false);
     }
