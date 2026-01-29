@@ -135,7 +135,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
               </div>
               <Badge variant={severityVariantMap[alert.severity]}>{alert.severity}</Badge>
               <Badge variant={statusVariantMap[alert.status]}>{alert.status}</Badge>
-              <p className="hidden text-sm text-muted-foreground lg:block">{new Date(alert.timestamp).toLocaleString()}</p>
+              <p suppressHydrationWarning className="hidden text-sm text-muted-foreground lg:block">{new Date(alert.timestamp).toLocaleString()}</p>
             </div>
           </AccordionTrigger>
           <AccordionContent>
@@ -155,7 +155,7 @@ export function AlertList({ alerts, devices, tenantId, userId }: AlertListProps)
                     </div>
                     <div>
                         <p className="font-medium">Timestamp</p>
-                        <p className="text-muted-foreground">{new Date(alert.timestamp).toLocaleString()}</p>
+                        <p suppressHydrationWarning className="text-muted-foreground">{new Date(alert.timestamp).toLocaleString()}</p>
                     </div>
                     <div className="col-span-2 md:col-span-4">
                         <p className="font-medium">Risk Score: {alert.riskScore}/100</p>
