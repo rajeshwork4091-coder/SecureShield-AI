@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, doc, getDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
 import type { Threat, Device } from '@/lib/data';
@@ -19,6 +19,10 @@ export default function ThreatsPage() {
   const [devices, setDevices] = useState<Device[]>([]);
   const [alertsLoading, setAlertsLoading] = useState(true);
   const [devicesLoading, setDevicesLoading] = useState(true);
+
+  const [severityFilter, setSeverityFilter] = useState('all');
+  const [detectionMethodFilter, setDetectionMethodFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   useEffect(() => {
     if (userLoading || !firestore) return;
@@ -93,6 +97,20 @@ export default function ThreatsPage() {
 
   const loading = userLoading || alertsLoading || devicesLoading;
 
+  const filteredAlerts = useMemo(() => {
+    return alerts.filter(alert => {
+      if (severityFilter !== 'all' && alert.severity !== severityFilter) return false;
+      if (detectionMethodFilter !== 'all' && alert.detectionMethod !== detectionMethodFilter) return false;
+      if (statusFilter !== 'all' && alert.status !== statusFilter) return false;
+      return true;
+    });
+  }, [alerts, severityFilter, detectionMethodFilter, statusFilter]);
+
+  const detectionMethods = useMemo(() => {
+    const methods = new Set(alerts.map(a => a.detectionMethod));
+    return Array.from(methods);
+  }, [alerts]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -104,7 +122,7 @@ export default function ThreatsPage() {
         <CardContent className="flex flex-col gap-4 p-4 md:flex-row">
           <div className="flex-1 space-y-2">
             <Label>Filter by severity</Label>
-            <Select disabled>
+            <Select value={severityFilter} onValueChange={setSeverityFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="All Severities" />
               </SelectTrigger>
@@ -118,21 +136,21 @@ export default function ThreatsPage() {
           </div>
           <div className="flex-1 space-y-2">
             <Label>Filter by detection method</Label>
-            <Select disabled>
+            <Select value={detectionMethodFilter} onValueChange={setDetectionMethodFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="All Methods" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Methods</SelectItem>
-                <SelectItem value="Anomaly Detection">Anomaly Detection</SelectItem>
-                <SelectItem value="Signature Matching">Signature Matching</SelectItem>
-                <SelectItem value="Behavioral Analysis">Behavioral Analysis</SelectItem>
+                {detectionMethods.map(method => (
+                  <SelectItem key={method} value={method}>{method}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="flex-1 space-y-2">
             <Label>Filter by status</Label>
-            <Select disabled>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger>
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
@@ -153,7 +171,7 @@ export default function ThreatsPage() {
             <Skeleton className="h-20 w-full" />
           </div>
       ) : (
-        <AlertList alerts={alerts} devices={devices} tenantId={tenantId} userId={user?.uid} />
+        <AlertList alerts={filteredAlerts} devices={devices} tenantId={tenantId} userId={user?.uid} />
       )}
     </div>
   );
