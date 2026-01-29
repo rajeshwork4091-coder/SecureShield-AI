@@ -86,16 +86,6 @@ service cloud.firestore {
           && request.resource.data.userId == request.auth.uid;
       }
 
-      // Rules for enrollment tokens
-      match /enrollmentTokens/{tokenId} {
-        // Only the tenant owner can create an enrollment token
-        allow create: if isSignedIn() &&
-          get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerId == request.auth.uid;
-        
-        // Tokens are write-once and cannot be read or updated from the client
-        allow read, update, delete: if false;
-      }
-
       // Rules for security policies in a tenant
       match /policies/{policyId} {
         // Tenant members can read policies for their own tenant

@@ -8,11 +8,11 @@ import {
   addDoc,
   collection,
   type Firestore,
-  Timestamp,
 } from 'firebase/firestore';
 
 export type Policy = 'Strict' | 'Balanced' | 'Lenient';
 export type AlertStatus = 'Active' | 'Resolved' | 'Quarantined';
+type OSEnum = 'Windows' | 'macOS' | 'Linux' | 'Tablet' | 'VM' | 'Other';
 
 export async function writeAuditLog(
   db: Firestore,
@@ -36,6 +36,36 @@ export async function writeAuditLog(
     // Non-critical, so we don't re-throw or show a toast
   }
 }
+
+export async function addDevice(
+  db: Firestore,
+  tenantId: string,
+  userId: string,
+  deviceData: { deviceName: string; os: OSEnum; ipAddress?: string }
+) {
+  if (!tenantId || !userId) {
+    throw new Error('Tenant ID and User ID are required.');
+  }
+  const devicesRef = collection(db, 'tenants', tenantId, 'devices');
+  
+  const newDevice = {
+    ...deviceData,
+    ipAddress: deviceData.ipAddress || 'N/A',
+    riskLevel: 'Low',
+    status: 'Online',
+    policy: 'Balanced',
+    isolated: false,
+    lastSeen: serverTimestamp(),
+    createdAt: serverTimestamp(),
+  };
+
+  const docRef = await addDoc(devicesRef, newDevice);
+  
+  await writeAuditLog(db, tenantId, userId, 'DEVICE_ENROLLED_MANUALLY', docRef.id, { deviceName: deviceData.deviceName, os: deviceData.os });
+
+  return docRef;
+}
+
 
 export async function isolateDevices(
   db: Firestore,
@@ -83,27 +113,6 @@ export async function changeDevicePolicy(
   await writeAuditLog(db, tenantId, userId, 'POLICY_CHANGED', deviceId, {
     newPolicy: policy,
   });
-}
-
-export async function generateEnrollmentToken(
-  db: Firestore,
-  tenantId: string,
-  userId: string
-): Promise<string> {
-  if (!tenantId) throw new Error('Tenant ID is required to generate a token.');
-
-  const tokenValue = crypto.randomUUID();
-  const tokenRef = collection(db, 'tenants', tenantId, 'enrollmentTokens');
-  
-  await addDoc(tokenRef, {
-    token: tokenValue,
-    used: false,
-    expiresAt: Timestamp.fromDate(new Date(Date.now() + 15 * 60 * 1000)), // Expires in 15 minutes
-    createdBy: userId,
-    createdAt: serverTimestamp(),
-  });
-
-  return tokenValue;
 }
 
 export async function saveSecurityPolicy(

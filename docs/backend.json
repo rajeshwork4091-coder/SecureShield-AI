@@ -194,36 +194,6 @@
       },
       "required": ["action", "targetId", "userId", "createdAt"]
     },
-    "EnrollmentToken": {
-      "title": "Enrollment Token",
-      "description": "A one-time token used to enroll a new device.",
-      "type": "object",
-      "properties": {
-        "token": {
-          "type": "string",
-          "description": "The unique token value."
-        },
-        "expiresAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the token expires."
-        },
-        "used": {
-          "type": "boolean",
-          "description": "Whether the token has been used."
-        },
-        "createdBy": {
-          "type": "string",
-          "description": "The UID of the user who created the token."
-        },
-        "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the token was created."
-        }
-      },
-      "required": ["token", "expiresAt", "used", "createdBy", "createdAt"]
-    },
     "SecurityPolicy": {
       "title": "Security Policy",
       "description": "Defines a security policy template for a tenant.",
@@ -300,12 +270,6 @@
         "$ref": "#/entities/AuditLog"
       },
       "description": "Stores audit log entries for a specific tenant."
-    },
-    "/tenants/{tenantId}/enrollmentTokens/{tokenId}": {
-      "schema": {
-        "$ref": "#/entities/EnrollmentToken"
-      },
-      "description": "Stores single-use tokens for device enrollment."
     },
     "/tenants/{tenantId}/policies/{policyId}": {
       "schema": {

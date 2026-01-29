@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,10 +12,21 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { generateEnrollmentToken } from '@/lib/firebase/firestore';
+import { addDevice } from '@/lib/firebase/firestore';
 import { Loader2 } from 'lucide-react';
+
+const formSchema = z.object({
+  deviceName: z.string().min(1, 'Device name is required.'),
+  os: z.enum(['Windows', 'macOS', 'Linux', 'Tablet', 'VM', 'Other'], {
+    required_error: 'You need to select an OS.',
+  }),
+  ipAddress: z.string().ip({ message: 'Invalid IP address.' }).optional().or(z.literal('')),
+});
 
 interface EnrollDeviceDialogProps {
   isOpen: boolean;
@@ -25,92 +38,125 @@ export function EnrollDeviceDialog({ isOpen, onOpenChange, tenantId }: EnrollDev
   const firestore = useFirestore();
   const { user } = useUser();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
 
-  const handleGenerateToken = async () => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      deviceName: '',
+      os: undefined,
+      ipAddress: '',
+    },
+  });
+
+  const { isSubmitting } = form.formState;
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!firestore || !tenantId || !user) {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Cannot generate token. User or tenant not found.',
+        description: 'Cannot enroll device. User or tenant not found.',
       });
       return;
     }
 
-    setIsLoading(true);
-    setToken(null);
     try {
-      const generatedToken = await generateEnrollmentToken(firestore, tenantId, user.uid);
-      setToken(generatedToken);
+      await addDevice(firestore, tenantId, user.uid, values);
       toast({
-        title: 'Token Generated',
-        description: 'This token is valid for 15 minutes.',
+        title: 'Device Enrolled',
+        description: `${values.deviceName} has been registered.`,
       });
+      form.reset();
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
-        description: error.message || 'Could not generate the enrollment token.',
+        description: error.message || 'Could not enroll the device.',
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }
 
-  const handleClose = () => {
-    setToken(null);
-    onOpenChange(false);
-  };
-  
-  const handleCopyToClipboard = () => {
-    if (!token) return;
-    navigator.clipboard.writeText(token);
-    toast({
-        title: "Copied!",
-        description: "Enrollment token copied to clipboard."
-    })
+  const handleClose = (open: boolean) => {
+    if (isSubmitting) return;
+    form.reset();
+    onOpenChange(open);
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Enroll New Device</DialogTitle>
+          <DialogTitle>Manually Enroll Device</DialogTitle>
           <DialogDescription>
-            Generate a secure, one-time enrollment token for installing the SecureShield agent on a new device.
+            Add a new device to your tenant by providing its details below.
           </DialogDescription>
         </DialogHeader>
-        
-        <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-                This token is single-use and expires in 15 minutes. Provide it to the endpoint agent during installation.
-            </p>
 
-            <Button onClick={handleGenerateToken} disabled={isLoading} className="w-full">
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isLoading ? 'Generating...' : 'Generate Enrollment Token'}
-            </Button>
-
-            {token && (
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Generated Token:</p>
-                <div className="flex gap-2">
-                    <code className="block flex-1 rounded bg-muted p-2 text-sm font-mono break-all">
-                        {token}
-                    </code>
-                    <Button variant="outline" size="sm" onClick={handleCopyToClipboard}>Copy</Button>
-                </div>
-                <p className="text-xs text-muted-foreground">The endpoint agent will use this token to securely register itself with your tenant.</p>
-              </div>
-            )}
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Close
-          </Button>
-        </DialogFooter>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <FormField
+              control={form.control}
+              name="deviceName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Device Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., finance-laptop-02" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="os"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Operating System</FormLabel>
+                   <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an OS" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Windows">Windows</SelectItem>
+                      <SelectItem value="macOS">macOS</SelectItem>
+                      <SelectItem value="Linux">Linux</SelectItem>
+                      <SelectItem value="Tablet">Tablet</SelectItem>
+                      <SelectItem value="VM">VM</SelectItem>
+                       <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="ipAddress"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>IP Address (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., 192.168.1.100" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <DialogFooter>
+                <Button variant="outline" type="button" onClick={() => handleClose(false)} disabled={isSubmitting}>
+                    Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isSubmitting ? 'Enrolling...' : 'Enroll Device'}
+                </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
